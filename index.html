@@ -101,8 +101,8 @@ main{display:flex;flex:1;overflow:hidden}
 #tree-container{flex:1;overflow:hidden;touch-action:none;position:relative;background-color:#1c1e23;order:2}
 #tree-container::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,#2b303a 0%,#15171c 100%);z-index:-2}
 #tree-container::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.05) 1px,transparent 1px);background-size:20px 20px;z-index:-1}
-#tree-svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35))}
-.tree-node{cursor:pointer;transition:all .3s}
+#tree-svg{width:100%;height:100%;display:block}
+.tree-node{cursor:pointer;transition:all .3s;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
 .tree-node:hover{filter:brightness(1.2) drop-shadow(0 0 8px rgba(94,176,249,0.25))}
 
 /* MODAL */
@@ -982,21 +982,24 @@ function drawEdges(svg, node, parent) {
     if (!grad) {
       grad = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
       grad.setAttribute('id', gradId);
-      grad.setAttribute('x1', '0');
-      grad.setAttribute('y1', '0');
-      grad.setAttribute('x2', '0');
-      grad.setAttribute('y2', '1');
-      const stop1 = document.createElementNS('http://www.w3.org/2000/svg','stop');
-      stop1.setAttribute('offset', '0%');
-      stop1.setAttribute('stop-color', parentCol);
-      const stop2 = document.createElementNS('http://www.w3.org/2000/svg','stop');
-      stop2.setAttribute('offset', '100%');
-      stop2.setAttribute('stop-color', col);
-      grad.appendChild(stop1);
-      grad.appendChild(stop2);
+      grad.setAttribute('gradientUnits', 'userSpaceOnUse');
       defs.appendChild(grad);
     }
-    // Object bounding box handles orientation, no need to update specific x1/y1 bounds!
+    // Update every time in case colors or layout changed
+    grad.innerHTML = '';
+    const stop1 = document.createElementNS('http://www.w3.org/2000/svg','stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', parentCol);
+    const stop2 = document.createElementNS('http://www.w3.org/2000/svg','stop');
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', col);
+    grad.appendChild(stop1);
+    grad.appendChild(stop2);
+    
+    grad.setAttribute('x1', parent.x);
+    grad.setAttribute('y1', parent.y+16);
+    grad.setAttribute('x2', node.x);
+    grad.setAttribute('y2', node.y-16);
     
     
     const branch = document.createElementNS('http://www.w3.org/2000/svg','path');
