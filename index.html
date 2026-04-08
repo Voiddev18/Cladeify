@@ -126,9 +126,9 @@ main{display:flex;flex:1;overflow:hidden}
 
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @media(max-width:768px){
-  html,body{height:auto;overflow-y:auto;overflow-x:hidden}
-  #app{height:auto}
-  main{flex-direction:column;overflow:visible}
+  html,body{height:auto;overflow-y:auto;overflow-x:hidden;max-width:100vw}
+  #app{height:auto;max-width:100vw;overflow-x:hidden}
+  main{flex-direction:column;overflow-x:hidden;overflow-y:visible;max-width:100vw}
   header{padding:10px 12px}
   header > div:first-child{gap:6px!important}
   header > div:last-child{gap:8px!important}
@@ -139,8 +139,8 @@ main{display:flex;flex:1;overflow:hidden}
   #left-panel{width:100%;min-width:0;max-height:none;border-right:none;border-bottom:none;order:2;display:flex;flex-direction:column}
   #guess-section{border-bottom:1px solid var(--border)}
   #wiki-panel{padding:16px}
-  #tree-container{flex-shrink:0;order:1;border-bottom:1px solid var(--border);width:100%}
-  #tree-svg{max-width:none;width:100%;height:100%}
+  #tree-container{flex-shrink:0;order:1;border-bottom:1px solid var(--border);width:100%;min-width:0;max-width:100vw;overflow-x:auto}
+  #tree-svg{max-width:none;width:auto;height:100%}
 }
 </style>
   <script src="https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js"></script>
