@@ -822,18 +822,25 @@ function showToast(msg){
 
 // ============ TREE RENDERING ============
 function buildTrie(){
-  const root={name:'Animalia',children:{},isAnimal:false,animalData:null,depth:0};
+  const root={name:'Animalia',children:{},isAnimal:false,animalData:null,depth:0, lcaWithAnswer:0};
   const realGuesses=guesses.filter(g=>g!==null);
   const allPaths=[...realGuesses.map(g=>({path:[...g.t,g.n],animal:g,isAnswer:false}))];
   if(realGuesses.length>0){
     allPaths.push({path:[...answer.t,answer.n],animal:answer,isAnswer:true});
   }
+  const ansPath = answer ? [...answer.t, answer.n] : [];
+
   for(const {path,animal,isAnswer} of allPaths){
     let node=root;
     for(let i=1;i<path.length;i++){
       const name=path[i];
       if(!node.children[name]){
-        node.children[name]={name,children:{},isAnimal:false,animalData:null,depth:i,isAnswer:false};
+        let lca=0;
+        for(let j=0;j<=i;j++) {
+          if(ansPath[j]===path[j]) lca=j;
+          else break;
+        }
+        node.children[name]={name,children:{},isAnimal:false,animalData:null,depth:i,isAnswer:false, lcaWithAnswer:lca};
       }
       node=node.children[name];
     }
@@ -857,17 +864,24 @@ function pruneTrie(node){
     node.animalData=child.animalData;
     node.depth=child.depth;
     node.isAnswer=child.isAnswer;
+    node.lcaWithAnswer=child.lcaWithAnswer;
   }
 }
+let leafIndex = 0;
 function layoutNode(node,x,y,w){
   node.x=x;node.y=y;node.w=w;
   const kids=Object.values(node.children);
-  if(kids.length===0)return;
+  const isMobile = window.innerWidth <= 768;
+  if(kids.length===0){
+    if(isMobile) node.y += (leafIndex % 2) * 55;
+    leafIndex++;
+    return;
+  }
   const leafCount=k=>Object.keys(k.children).length===0?1:Object.values(k.children).reduce((s,c)=>s+leafCount(c),0);
   const counts=kids.map(k=>leafCount(k));
   const total=counts.reduce((a,b)=>a+b,0);
   let cx=x-w/2;
-  const vGap=110;
+  const vGap = isMobile ? 85 : 110;
   for(let i=0;i<kids.length;i++){
     const cw=(counts[i]/total)*w;
     layoutNode(kids[i],cx+cw/2,y+vGap,cw);
@@ -878,10 +892,7 @@ function layoutNode(node,x,y,w){
 function getNodeColor(node){
   if(node.isAnswer&&!gameOver) return ANSWER_COLOR;
   if(node.isAnswer&&gameOver) return '#2E7D32';
-  if(node.isAnimal&&node.animalData){
-    return getGuessNodeColor(node.animalData);
-  }
-  return getColor(node.depth,answer.t.length-1);
+  return getColor(node.lcaWithAnswer, answer.t.length-1);
 }
 
 function drawEdges(svg, node, parent) {
@@ -1025,13 +1036,14 @@ function renderTree() {
   
   const tl = totalLeaves(trie);
   const isMobile = window.innerWidth <= 768;
-  const leafW = isMobile ? 120 : 160;
-  const minW = isMobile ? Math.max(window.innerWidth, 360) : 600;
+  const leafW = isMobile ? 75 : 160;
+  const minW = isMobile ? Math.max(window.innerWidth, 320) : 600;
   const svgW = Math.max(minW, tl*leafW);
   const md = getMaxDepth(trie);
-  const levelH = isMobile ? 90 : 110;
-  const svgH = Math.max(isMobile ? 200 : 350, (md+1)*levelH+80);
+  const levelH = isMobile ? 85 : 110;
+  const svgH = Math.max(isMobile ? 300 : 350, (md+1)*levelH + (isMobile ? 120 : 80));
   
+  leafIndex = 0;
   layoutNode(trie, svgW/2, 40, svgW-60);
   rootPos = {x: trie.x, y: trie.y};
   
