@@ -728,20 +728,20 @@
       align-items: center;
       gap: 8px;
       padding: 12px 28px;
-      background: linear-gradient(135deg, var(--accent), #7ed8c4);
-      color: #000;
-      border: none;
+      background: var(--glass2);
+      color: var(--text);
+      border: 1px solid var(--border);
       border-radius: 12px;
       font-family: inherit;
       font-size: 0.95rem;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
-      transition: transform .15s, box-shadow .15s;
+      transition: all .2s;
       margin-bottom: 18px
     }
     #win-banner .banner-share-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(77,182,172,0.35)
+      background: rgba(255,255,255,0.05);
+      border-color: var(--accent);
     }
     #win-banner .banner-credit {
       font-size: 0.72rem;
@@ -1460,7 +1460,17 @@
                 let plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
                 let wins = parseInt(localStorage.getItem('cladeify_wins')) || 0;
 
-                if (lastWin != puzzleDay) {
+                if (plays === 0) {
+                  plays = 1;
+                  wins = 1;
+                  streak = 1;
+                  maxStreak = 1;
+                  localStorage.setItem('cladeify_last_win', puzzleDay);
+                  localStorage.setItem('cladeify_streak', streak);
+                  localStorage.setItem('cladeify_max_streak', maxStreak);
+                  localStorage.setItem('cladeify_plays', plays);
+                  localStorage.setItem('cladeify_wins', wins);
+                } else if (lastWin != puzzleDay) {
                   plays++;
                   wins++;
                   // Re-calculate streak based on last win
@@ -1551,7 +1561,18 @@
         let maxStreak = parseInt(localStorage.getItem('cladeify_max_streak')) || 0;
         let plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
         let wins = parseInt(localStorage.getItem('cladeify_wins')) || 0;
-        if (lastWin != puzzleDay) {
+        
+        if (plays === 0) {
+          plays = 1;
+          wins = 1;
+          streak = 1;
+          maxStreak = 1;
+          localStorage.setItem('cladeify_last_win', puzzleDay);
+          localStorage.setItem('cladeify_streak', streak);
+          localStorage.setItem('cladeify_max_streak', maxStreak);
+          localStorage.setItem('cladeify_plays', plays);
+          localStorage.setItem('cladeify_wins', wins);
+        } else if (lastWin != puzzleDay) {
           plays++;
           wins++;
           if (lastWin == puzzleDay - 1) { streak++; } else { streak = 1; }
@@ -1561,6 +1582,11 @@
           localStorage.setItem('cladeify_max_streak', maxStreak);
           localStorage.setItem('cladeify_plays', plays);
           localStorage.setItem('cladeify_wins', wins);
+        }
+
+        if (streak > maxStreak) {
+          maxStreak = streak;
+          localStorage.setItem('cladeify_max_streak', maxStreak);
         }
 
         if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
