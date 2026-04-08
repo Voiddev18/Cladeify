@@ -1416,8 +1416,8 @@
     function loadDailyGame() {
       puzzleDay = getPuzzleDay();
       answer = getDailyAnimal(puzzleDay);
-      const dayLabel = Math.max(puzzleDay + 1, 1);
-      document.getElementById('game-num').textContent = 'Daily #' + dayLabel;
+      const dayLabel = puzzleDay + 2;
+      document.getElementById('game-num').textContent = 'Day #' + dayLabel;
 
       // Try restore today's progress from localStorage
       const saved = localStorage.getItem('cladeify_daily');
@@ -1634,12 +1634,12 @@
     }
     // ============ SHARE RESULTS ============
     function shareResults() {
-      const dayLabel = Math.max(puzzleDay + 1, 1);
+      const dayLabel = puzzleDay + 2;
       const won = guesses.some(g => g && g.n === answer.n);
       const realGuesses = guesses.filter(g => g !== null);
       const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
 
-      let text = `🧬 Cladeify Daily #${dayLabel}\n`;
+      let text = `🧬 Cladeify Day #${dayLabel}\n`;
       text += won ? `Guessed in ${realGuesses.length}/${maxGuesses}! ` + (streak > 0 ? `🔥 Streak: ${streak}\n` : `\n`) : `X/${maxGuesses}\n`;
       text += '\n';
       // Build emoji grid based on guess closeness
@@ -2005,7 +2005,7 @@
 
       const tl = totalLeaves(trie);
       const isMobile = window.innerWidth <= 768;
-      const leafW = isMobile ? 75 : 160;
+      const leafW = isMobile ? 58 : 160;
       const minW = isMobile ? window.innerWidth : 600;
       const svgW = Math.max(minW, tl * leafW);
       const md = getMaxDepth(trie);
