@@ -950,7 +950,7 @@ function layoutNode(node,x,y,w){
 
 function getNodeColor(node){
   if(node.isAnswer&&!gameOver) return ANSWER_COLOR;
-  if(node.isAnswer&&gameOver) return 'var(--accent)';
+  if(node.isAnswer&&gameOver) return '#5EB0F9';
   return getColor(node.lcaWithAnswer, answer.t.length-1);
 }
 
@@ -982,7 +982,10 @@ function drawEdges(svg, node, parent) {
     if (!grad) {
       grad = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
       grad.setAttribute('id', gradId);
-      grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+      grad.setAttribute('x1', '0');
+      grad.setAttribute('y1', '0');
+      grad.setAttribute('x2', '0');
+      grad.setAttribute('y2', '1');
       const stop1 = document.createElementNS('http://www.w3.org/2000/svg','stop');
       stop1.setAttribute('offset', '0%');
       stop1.setAttribute('stop-color', parentCol);
@@ -993,11 +996,8 @@ function drawEdges(svg, node, parent) {
       grad.appendChild(stop2);
       defs.appendChild(grad);
     }
-    // Update vector bounds
-    grad.setAttribute('x1', parent.x);
-    grad.setAttribute('y1', parent.y+16);
-    grad.setAttribute('x2', node.x);
-    grad.setAttribute('y2', node.y-16);
+    // Object bounding box handles orientation, no need to update specific x1/y1 bounds!
+    
     
     const branch = document.createElementNS('http://www.w3.org/2000/svg','path');
     branch.setAttribute('fill', 'none');
