@@ -932,7 +932,7 @@ function layoutNode(node,x,y,w){
   const kids=Object.values(node.children);
   const isMobile = window.innerWidth <= 768;
   if(kids.length===0){
-    if(isMobile) node.y += (leafIndex % 2) * 55;
+    if(isMobile) node.y += (leafIndex % 3) * 65;
     leafIndex++;
     return;
   }
@@ -1150,12 +1150,12 @@ function renderTree() {
   
   const tl = totalLeaves(trie);
   const isMobile = window.innerWidth <= 768;
-  const leafW = isMobile ? 75 : 160;
-  const minW = isMobile ? Math.max(window.innerWidth, 320) : 600;
+  const leafW = isMobile ? 60 : 160;
+  const minW = isMobile ? window.innerWidth : 600;
   const svgW = Math.max(minW, tl*leafW);
   const md = getMaxDepth(trie);
   const levelH = isMobile ? 85 : 110;
-  const svgH = Math.max(isMobile ? 300 : 350, (md+1)*levelH + (isMobile ? 120 : 80));
+  const svgH = Math.max(isMobile ? 400 : 350, (md+1)*levelH + (isMobile ? 200 : 80));
   
   leafIndex = 0;
   layoutNode(trie, svgW/2, 40, svgW-60);
@@ -1170,7 +1170,7 @@ function renderTree() {
   const cw = cont.clientWidth || window.innerWidth;
   
   if(isMobile) {
-    const scale = 0.85;
+    const scale = Math.max(0.85, Math.min(1, cw / svgW));
     const fw = svgW * scale;
     const fh = svgH * scale;
     
