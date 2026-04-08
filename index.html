@@ -256,22 +256,25 @@
     }
 
     .share-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #000;
-      border: none;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: var(--glass2);
+      color: var(--text);
+      border: 1px solid var(--border);
       padding: 6px 14px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-family: inherit;
-      font-weight: 700;
+      font-weight: 600;
       transition: all .2s;
-      display: none
     }
 
     .share-btn:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: var(--accent);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(94, 176, 249, 0.3)
     }
 
     #win-msg {
@@ -883,7 +886,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <span id="countdown"></span>
-        <button class="share-btn" id="share-btn" onclick="shareResults()">📋 Share</button>
+        <button class="share-btn" id="share-btn" onclick="shareResults()">Share <span>🔗</span></button>
       </div>
     </header>
     <main>
@@ -1450,7 +1453,7 @@
               if (guesses.some(g => g && g.n === answer.n)) {
                 const numGuesses = guesses.filter(g => g).length;
                 document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${numGuesses} guess${numGuesses > 1 ? 'es' : ''}!`;
-                document.getElementById('share-btn').style.display = 'inline-block';
+                document.getElementById('share-btn').style.display = 'inline-flex';
                 showWikiForAnimal(answer, "🎉 You found it!");
                 if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
                 // Check if we need to record this win in our stats (if not already recorded today)
@@ -1499,7 +1502,7 @@
                 document.getElementById('win-msg').querySelector('h3').textContent = '😔 Game Over';
                 document.getElementById('win-msg').querySelector('h3').style.color = 'var(--red)';
                 document.getElementById('win-text').textContent = `The answer was ${answer.n}.`;
-                document.getElementById('share-btn').style.display = 'inline-block';
+                document.getElementById('share-btn').style.display = 'inline-flex';
                 showWikiForAnimal(answer, "The mystery animal was " + answer.n + ".");
               }
             }
@@ -1595,7 +1598,7 @@
         document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${guesses.length} guess${guesses.length > 1 ? 'es' : ''}!`;
         document.getElementById('guess-input').disabled = true;
         document.getElementById('guess-btn').disabled = true;
-        document.getElementById('share-btn').style.display = 'inline-block';
+        document.getElementById('share-btn').style.display = 'inline-flex';
         saveDailyState();
         showWikiForAnimal(answer, "🎉 You found it!");
         // Show win banner
@@ -1626,7 +1629,7 @@
         document.getElementById('win-text').textContent = `The answer was ${answer.n}.`;
         document.getElementById('guess-input').disabled = true;
         document.getElementById('guess-btn').disabled = true;
-        document.getElementById('share-btn').style.display = 'inline-block';
+        document.getElementById('share-btn').style.display = 'inline-flex';
         saveDailyState();
         showWikiForAnimal(answer, "The mystery animal was " + answer.n + ".");
       }
