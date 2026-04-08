@@ -636,6 +636,136 @@
       cursor: pointer
     }
 
+    /* WIN BANNER */
+    #win-banner-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .3s
+    }
+    #win-banner-overlay.show { display: flex }
+    #win-banner {
+      background: linear-gradient(145deg, #1e2230, #252a38);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 36px 32px 28px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+      position: relative;
+      animation: bannerPop .35s cubic-bezier(0.34,1.56,0.64,1)
+    }
+    @keyframes bannerPop {
+      from { opacity:0; transform: scale(0.85) translateY(20px) }
+      to   { opacity:1; transform: scale(1) translateY(0) }
+    }
+    #win-banner h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+      background: linear-gradient(135deg, #a8edea, #fed6e3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+    #win-banner .banner-subtitle {
+      font-size: 0.85rem;
+      color: var(--text3);
+      margin-bottom: 24px
+    }
+    .banner-stats {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin: 0 0 24px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden
+    }
+    .banner-stat-group {
+      flex: 1;
+      padding: 14px 8px;
+      border-right: 1px solid var(--border)
+    }
+    .banner-stat-group:last-child { border-right: none }
+    .banner-stat-group-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px
+    }
+    .banner-stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px
+    }
+    .banner-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center
+    }
+    .banner-stat .val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1
+    }
+    .banner-stat .lbl {
+      font-size: 0.68rem;
+      color: var(--text3);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em
+    }
+    #win-banner .banner-share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, var(--accent), #7ed8c4);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      margin-bottom: 18px
+    }
+    #win-banner .banner-share-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(77,182,172,0.35)
+    }
+    #win-banner .banner-credit {
+      font-size: 0.72rem;
+      color: var(--text3);
+      line-height: 1.5
+    }
+    #win-banner .banner-credit a {
+      color: var(--accent);
+      text-decoration: underline
+    }
+    #win-banner .banner-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px
+    }
+    #win-banner .banner-close:hover { color: var(--text) }
+
     @keyframes fadeIn {
       from {
         opacity: 0
@@ -819,6 +949,33 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- WIN BANNER MODAL -->
+  <div id="win-banner-overlay" onclick="closeBannerIfOutside(event)">
+    <div id="win-banner">
+      <button class="banner-close" onclick="document.getElementById('win-banner-overlay').classList.remove('show')" aria-label="Close">✕</button>
+      <h2>🎉 You Win!</h2>
+      <p class="banner-subtitle" id="banner-subtitle">You found the mystery animal!</p>
+      <div class="banner-stats">
+        <div class="banner-stat-group">
+          <div class="banner-stat-group-label">Games</div>
+          <div class="banner-stat-row">
+            <div class="banner-stat"><span class="val" id="banner-plays">0</span><span class="lbl">Plays</span></div>
+            <div class="banner-stat"><span class="val" id="banner-wins">0</span><span class="lbl">Wins</span></div>
+          </div>
+        </div>
+        <div class="banner-stat-group">
+          <div class="banner-stat-group-label">Streak</div>
+          <div class="banner-stat-row">
+            <div class="banner-stat"><span class="val" id="banner-streak">0</span><span class="lbl">Current</span></div>
+            <div class="banner-stat"><span class="val" id="banner-max-streak">0</span><span class="lbl">Max</span></div>
+          </div>
+        </div>
+      </div>
+      <button class="banner-share-btn" onclick="shareResults()">Share <span>🔗</span></button>
+      <div class="banner-credit">A redesign of <a href="https://metazooa.com" target="_blank">Metazooa</a> by <strong>Trainwreck Labs</strong></div>
+    </div>
   </div>
 
   <script>
@@ -1291,10 +1448,22 @@
               document.getElementById('win-msg').style.display = 'block';
               // Check if they won or lost
               if (guesses.some(g => g && g.n === answer.n)) {
-                document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${guesses.filter(g => g).length} guess${guesses.filter(g => g).length > 1 ? 'es' : ''}!`;
+                const numGuesses = guesses.filter(g => g).length;
+                document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${numGuesses} guess${numGuesses > 1 ? 'es' : ''}!`;
                 document.getElementById('share-btn').style.display = 'inline-block';
                 showWikiForAnimal(answer, "🎉 You found it!");
                 if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
+                // Show win banner with current stats
+                const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
+                const maxStreak = parseInt(localStorage.getItem('cladeify_max_streak')) || 0;
+                const plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
+                const wins = parseInt(localStorage.getItem('cladeify_wins')) || 0;
+                document.getElementById('banner-subtitle').textContent = `You found the ${answer.n} in ${numGuesses} guess${numGuesses > 1 ? 'es' : ''}!`;
+                document.getElementById('banner-plays').textContent = plays;
+                document.getElementById('banner-wins').textContent = wins;
+                document.getElementById('banner-streak').textContent = streak;
+                document.getElementById('banner-max-streak').textContent = maxStreak;
+                document.getElementById('win-banner-overlay').classList.add('show');
               } else {
                 document.getElementById('win-msg').querySelector('h3').textContent = '😔 Game Over';
                 document.getElementById('win-msg').querySelector('h3').style.color = 'var(--red)';
@@ -1355,15 +1524,25 @@
       if (animal.n === answer.n) {
         gameOver = true;
 
+        // Update stats
         let lastWin = localStorage.getItem('cladeify_last_win');
         let streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
-        if (lastWin == puzzleDay - 1) { streak++; }
-        else if (lastWin != puzzleDay) { streak = 1; }
-        localStorage.setItem('cladeify_last_win', puzzleDay);
-        localStorage.setItem('cladeify_streak', streak);
+        let maxStreak = parseInt(localStorage.getItem('cladeify_max_streak')) || 0;
+        let plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
+        let wins = parseInt(localStorage.getItem('cladeify_wins')) || 0;
+        if (lastWin != puzzleDay) {
+          plays++;
+          wins++;
+          if (lastWin == puzzleDay - 1) { streak++; } else { streak = 1; }
+          if (streak > maxStreak) maxStreak = streak;
+          localStorage.setItem('cladeify_last_win', puzzleDay);
+          localStorage.setItem('cladeify_streak', streak);
+          localStorage.setItem('cladeify_max_streak', maxStreak);
+          localStorage.setItem('cladeify_plays', plays);
+          localStorage.setItem('cladeify_wins', wins);
+        }
 
         if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
-
 
         document.getElementById('win-msg').style.display = 'block';
         document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${guesses.length} guess${guesses.length > 1 ? 'es' : ''}!`;
@@ -1372,11 +1551,28 @@
         document.getElementById('share-btn').style.display = 'inline-block';
         saveDailyState();
         showWikiForAnimal(answer, "🎉 You found it!");
+        // Show win banner
+        document.getElementById('banner-subtitle').textContent = `You found the ${answer.n} in ${guesses.length} guess${guesses.length > 1 ? 'es' : ''}!`;
+        document.getElementById('banner-plays').textContent = plays;
+        document.getElementById('banner-wins').textContent = wins;
+        document.getElementById('banner-streak').textContent = streak;
+        document.getElementById('banner-max-streak').textContent = maxStreak;
+        document.getElementById('win-banner-overlay').classList.add('show');
       } else {
         showWikiForClade(lca.clade, animal.n);
       }
       if (rem <= 0 && !gameOver) {
         gameOver = true;
+        // Increment plays (loss)
+        let plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
+        let lastPlay = localStorage.getItem('cladeify_last_play');
+        if (lastPlay != puzzleDay) {
+          plays++;
+          localStorage.setItem('cladeify_plays', plays);
+          localStorage.setItem('cladeify_last_play', puzzleDay);
+          // Streak broken
+          localStorage.setItem('cladeify_streak', 0);
+        }
         document.getElementById('win-msg').style.display = 'block';
         document.getElementById('win-msg').querySelector('h3').textContent = '😔 Game Over';
         document.getElementById('win-msg').querySelector('h3').style.color = 'var(--red)';
@@ -1860,6 +2056,13 @@
       function updateSel(items) { items.forEach((it, i) => it.classList.toggle('active', i === selIdx)); }
       document.addEventListener('click', (e) => { if (!inp.contains(e.target) && !ac.contains(e.target)) ac.style.display = 'none'; });
     })();
+
+    // ============ WIN BANNER HELPERS ============
+    function closeBannerIfOutside(e) {
+      if (e.target === document.getElementById('win-banner-overlay')) {
+        document.getElementById('win-banner-overlay').classList.remove('show');
+      }
+    }
 
     // ============ INIT ============
     loadDailyGame();
