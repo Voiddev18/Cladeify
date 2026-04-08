@@ -118,8 +118,8 @@ main{display:flex;flex:1;overflow:hidden}
   #left-panel{width:100%;min-width:0;max-height:none;border-right:none;border-bottom:none;order:2;display:flex;flex-direction:column}
   #guess-section{border-bottom:2px solid #5d4037}
   #wiki-panel{padding:12px}
-  #tree-container{min-height:auto;height:auto;order:1;border-bottom:2px solid #5d4037;width:100%}
-  #tree-svg{max-width:none}
+  #tree-container{min-height:55vh;height:55vh;order:1;border-bottom:2px solid #5d4037;width:100%}
+  #tree-svg{max-width:none;width:100%;height:100%}
 }
 </style>
   <script src="https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js"></script>
@@ -519,26 +519,21 @@ const ANIMALS = [
 ];
 
 // ============ DAILY PUZZLE SYSTEM ============
-// Seeded PRNG (mulberry32)
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 
-// Get the current puzzle day number. Resets at 1pm PT (UTC-7 = 20:00 UTC)
 function getPuzzleDay(){
-  const EPOCH=new Date('2026-04-08T20:00:00Z').getTime(); // First puzzle: Apr 8 2026 at 1pm PT
+  const EPOCH=new Date('2026-04-08T20:00:00Z').getTime();
   const now=Date.now();
   const MS_PER_DAY=86400000;
   return Math.floor((now-EPOCH)/MS_PER_DAY);
 }
 
-// Build a deterministic permutation of all animal indices for a given cycle
 function getDailyAnimal(dayNum){
   const n=ANIMALS.length;
   const cycle=Math.floor(dayNum/n);
-  const indexInCycle=((dayNum%n)+n)%n; // handle negative days gracefully
-  // Create a seeded shuffle for this cycle
+  const indexInCycle=((dayNum%n)+n)%n;
   const rng=mulberry32(cycle*7919+31337);
   const indices=[...Array(n).keys()];
-  // Fisher-Yates shuffle with seeded rng
   for(let i=n-1;i>0;i--){
     const j=Math.floor(rng()*((i+1)|0));
     [indices[i],indices[j]]=[indices[j],indices[i]];
@@ -546,7 +541,6 @@ function getDailyAnimal(dayNum){
   return ANIMALS[indices[indexInCycle]];
 }
 
-// Time until next puzzle
 function getTimeUntilReset(){
   const EPOCH=new Date('2026-04-08T20:00:00Z').getTime();
   const MS_PER_DAY=86400000;
@@ -568,15 +562,14 @@ function getLCA(t1,t2){
   let i=0;while(i<t1.length&&i<t2.length&&t1[i]===t2[i])i++;
   return {clade:t1[i-1],depth:i-1,path1:t1.slice(0,i),path2:t2.slice(0,i)};
 }
-// Metazooa-accurate color palette: dark red → sienna → golden → olive → green
 function getColor(depth,maxD){
   const ratio=Math.min(depth/Math.max(maxD,1),1);
   const stops=[
-    [139,26,26],   // 0.00 dark red
-    [160,82,45],   // 0.25 sienna
-    [139,117,20],  // 0.50 dark golden
-    [107,142,35],  // 0.75 olive drab
-    [46,125,50]    // 1.00 green
+    [139,26,26],
+    [160,82,45],
+    [139,117,20],
+    [107,142,35],
+    [46,125,50]
   ];
   const seg=ratio*(stops.length-1);
   const idx=Math.min(Math.floor(seg),stops.length-2);
@@ -587,7 +580,7 @@ function getColor(depth,maxD){
   const b=Math.round(c1[2]+(c2[2]-c1[2])*t);
   return `rgb(${r},${g},${b})`;
 }
-const ANSWER_COLOR='#4DB6AC'; // teal for ???
+const ANSWER_COLOR='#4DB6AC';
 let oldPositions = {};
 let rootPos = {x: 300, y: 40};
 
@@ -601,17 +594,14 @@ function loadDailyGame(){
   const dayLabel=Math.max(puzzleDay+1,1);
   document.getElementById('game-num').textContent='Daily #'+dayLabel;
 
-  // Try restore today's progress from localStorage
   const saved=localStorage.getItem('cladeify_daily');
   if(saved){
     try{
       const data=JSON.parse(saved);
       if(data.day===puzzleDay){
-        // Restore state
         guesses=data.guesses.map(n=>n?findAnimal(n):null).filter(g=>g!==undefined);
         gameOver=data.gameOver||false;
         oldPositions={};
-        // Rebuild guess tags
         const list=document.getElementById('guess-list');
         list.innerHTML='';
         for(const g of guesses){
@@ -628,7 +618,6 @@ function loadDailyGame(){
           document.getElementById('guess-input').disabled=true;
           document.getElementById('guess-btn').disabled=true;
           document.getElementById('win-msg').style.display='block';
-          // Check if they won or lost
           if(guesses.some(g=>g&&g.n===answer.n)){
             document.getElementById('win-text').textContent=`The answer was ${answer.n}! You got it in ${guesses.filter(g=>g).length} guess${guesses.filter(g=>g).length>1?'es':''}!`;
             document.getElementById('share-btn').style.display='inline-block';
@@ -644,7 +633,6 @@ function loadDailyGame(){
       }
     }catch(e){}
   }
-  // Fresh daily game
   guesses=[];gameOver=false;oldPositions={};
   document.getElementById('remaining').textContent=`(${maxGuesses} remaining)`;
   document.getElementById('guess-input').value='';
@@ -679,7 +667,6 @@ function submitGuess(){
   const rem=maxGuesses-guesses.length;
   document.getElementById('remaining').textContent=`(${rem} remaining)`;
   inp.value='';
-  // Add tag
   const lca=getLCA(animal.t,answer.t);
   const col=getGuessNodeColor(animal);
   const list=document.getElementById('guess-list');
@@ -687,7 +674,6 @@ function submitGuess(){
   tag.className='guess-tag';tag.textContent=animal.n;
   tag.style.borderColor=col;tag.style.color=col;
   list.appendChild(tag);
-  // Check win
   if(animal.n===answer.n){
     gameOver=true;
     document.getElementById('win-msg').style.display='block';
@@ -721,7 +707,6 @@ function shareResults(){
   let text=`🧬 Cladeify Daily #${dayLabel}\n`;
   text+=won?`Guessed in ${realGuesses.length}/${maxGuesses}!\n`:`X/${maxGuesses}\n`;
   text+='\n';
-  // Build emoji grid based on guess closeness
   for(const g of realGuesses){
     const lca=getLCA(g.t,answer.t);
     const ratio=lca.depth/(answer.t.length-1);
@@ -730,7 +715,7 @@ function shareResults(){
     else if(ratio>=0.4) text+='🟧';
     else text+='🟥';
   }
-  text+='\nhttps://cladeify.com'; // placeholder URL
+  text+='\nhttps://cladeify.com';
   navigator.clipboard.writeText(text).then(()=>showToast('Results copied to clipboard!')).catch(()=>showToast('Could not copy'));
 }
 
@@ -738,19 +723,16 @@ function shareResults(){
 function updateCountdown(){
   const el=document.getElementById('countdown');
   if(el) el.textContent='Next puzzle in '+getTimeUntilReset();
-  // Check if the day rolled over
   const currentDay=getPuzzleDay();
   if(currentDay!==puzzleDay){
-    loadDailyGame(); // auto-refresh to new puzzle
+    loadDailyGame();
   }
 }
 setInterval(updateCountdown,1000);
 
 // ============ WIKI ============
 function getCommonAnimalsHtml(clade){
-  // Find animals from the database whose taxonomy includes this clade
   const matches=ANIMALS.filter(a=>a.t.includes(clade));
-  // Shuffle and pick up to 12, exclude the answer to avoid spoilers
   const filtered=matches.filter(a=>!answer||a.n!==answer.n);
   const shuffled=filtered.sort(()=>Math.random()-0.5).slice(0,12);
   if(shuffled.length===0)return '';
@@ -839,9 +821,7 @@ function buildTrie(){
 }
 function pruneTrie(node){
   const childKeys=Object.keys(node.children);
-  // Recursively prune children first
   for(const k of childKeys)pruneTrie(node.children[k]);
-  // If only one child and this is not root and not an animal, merge with child
   const ks=Object.keys(node.children);
   if(ks.length===1&&!node.isAnimal&&node.name!=='Animalia'){
     const child=node.children[ks[0]];
@@ -887,7 +867,6 @@ function drawEdges(svg, node, parent) {
     const oldParent = oldPositions[parentId] || rootPos;
     const oldNode = oldPositions[nodeId] || rootPos;
     
-    // Create bezier curves to look like natural wood branches
     const my = parent.y + Math.max(30, (node.y - parent.y)/2);
     const newD = `M${parent.x},${parent.y+16} C${parent.x},${my} ${node.x},${my} ${node.x},${node.y-16}`;
 
@@ -896,7 +875,6 @@ function drawEdges(svg, node, parent) {
 
     const pathGrp = document.createElementNS('http://www.w3.org/2000/svg','g');
     
-    // Thick wood branch
     const branch = document.createElementNS('http://www.w3.org/2000/svg','path');
     branch.setAttribute('fill', 'none');
     branch.setAttribute('stroke', col); 
@@ -904,7 +882,6 @@ function drawEdges(svg, node, parent) {
     branch.setAttribute('stroke-linecap', 'round');
     branch.animate([{d:`path('${oldD}')`}, {d:`path('${newD}')`}], {duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards'});
     
-    // Thin vine wrapping around it overlay
     const vine = document.createElementNS('http://www.w3.org/2000/svg','path');
     vine.setAttribute('fill', 'none');
     vine.setAttribute('stroke', 'rgba(255,255,255,0.4)');
@@ -929,7 +906,6 @@ function drawNodes(svg, node, parent) {
   const oldPos = oldPositions[nodeId] || rootPos;
   oldPositions[nodeId] = {x: node.x, y: node.y};
   
-  // WAAPI for smooth transition from previous spot or from root Animalia
   g.animate([
     { transform: `translate(${oldPos.x}px, ${oldPos.y}px)` },
     { transform: `translate(${node.x}px, ${node.y}px)` }
@@ -996,7 +972,6 @@ function renderTree() {
   layer.innerHTML = '';
   
   const trie = buildTrie();
-  // Always attach "???" if game just started
   if(guesses.filter(g=>g!==null).length === 0){
     trie.children['???'] = {name:'???', children:{}, isAnimal:true, isAnswer:true, depth:1, animalData: answer};
   }
@@ -1005,14 +980,18 @@ function renderTree() {
   
   const tl = totalLeaves(trie);
   const isMobile = window.innerWidth <= 768;
-  const leafW = isMobile ? 100 : 160;
-  const minW = isMobile ? Math.min(window.innerWidth, 400) : 600;
+  const leafW = isMobile ? 120 : 160;
+  const minW = isMobile ? Math.max(window.innerWidth, 360) : 600;
   const svgW = Math.max(minW, tl*leafW);
   const md = getMaxDepth(trie);
-  const svgH = Math.max(400, (md+1)*110+80); // More vertical room for vines
+  const svgH = Math.max(350, (md+1)*110+80);
   
-  layoutNode(trie, svgW/2, 40, svgW-80);
+  layoutNode(trie, svgW/2, 40, svgW-60);
   rootPos = {x: trie.x, y: trie.y};
+  
+  // Set SVG viewBox so content fills the element
+  const svgEl = document.getElementById('tree-svg');
+  svgEl.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
   
   // Draw all edges first, then nodes on top
   drawEdges(layer, trie, null);
@@ -1023,9 +1002,11 @@ function renderTree() {
   const cw = cont.clientWidth;
   const ch = cont.clientHeight;
   
-  const scale = Math.min(Math.min(cw/svgW, ch/svgH) * 0.95, isMobile ? 0.9 : 1.2);
-  const tx = cw/2 - (svgW/2)*scale;
-  const ty = Math.max(20, ch*0.05); // slightly from top
+  // On mobile, scale to fill the container generously
+  const fitScale = Math.min(cw/svgW, ch/svgH);
+  const scale = isMobile ? fitScale * 1.1 : Math.min(fitScale * 0.95, 1.2);
+  const tx = (cw - svgW*scale) / 2;
+  const ty = isMobile ? Math.max(10, (ch - svgH*scale) / 2) : Math.max(20, ch*0.05);
   
   if (window.pz) window.pz.dispose();
   
