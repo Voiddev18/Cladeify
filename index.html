@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cladeify - Guess the Animal</title>
+<meta name="description" content="Guess the mystery animal by narrowing down its taxonomic classification. A phylogenetic guessing game.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b100d;--bg2:#141f17;--bg3:#1d2e20;--bg4:#28402c;
+  --text:#e8f5e9;--text2:#a5d6a7;--text3:#66bb6a;
+  --accent:#81c784;--accent2:#4caf50;--red:#e53935;--green:#43a047;
+  --gold:#ffb300;--glass:rgba(165,214,167,0.05);--glass2:rgba(165,214,167,0.12);
+  --border:rgba(165,214,167,0.15);--radius:12px;--shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+body{display:flex;flex-direction:column}
+#app{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;
+  background:linear-gradient(135deg,#2e1a11,#4e342e);border-bottom:2px solid #5d4037;
+  position:relative;z-index:100;flex-shrink:0}
+header h1{font-size:1.6rem;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--text));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+header .game-num{color:var(--text2);font-size:0.85rem;font-weight:500}
+header .new-game-btn{background:var(--glass2);border:1px solid #795548;color:var(--text);
+  padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all .2s}
+header .new-game-btn:hover{background:#5d4037;color:var(--gold);border-color:var(--gold)}
+main{display:flex;flex:1;overflow:hidden}
+
+/* LEFT PANEL */
+#left-panel{width:380px;min-width:340px;display:flex;flex-direction:column;border-right:1px solid var(--border);
+  background:var(--bg2);flex-shrink:0;overflow:hidden;order:1}
+#tree-container{order:2}
+#guess-section{padding:20px;border-bottom:1px solid var(--border);flex-shrink:0}
+#guess-section label{font-size:0.9rem;color:var(--text2);margin-bottom:4px;display:block}
+#guess-section .remaining{color:var(--accent);font-weight:600;font-size:0.85rem;margin-left:8px}
+#input-row{display:flex;gap:8px;margin-top:10px;position:relative}
+#guess-input{flex:1;padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-size:0.95rem;font-family:inherit;outline:none;
+  transition:all .2s}
+#guess-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(129,199,132,0.2)}
+#guess-btn{padding:10px 20px;border-radius:var(--radius);border:2px solid #5d4037;background:linear-gradient(135deg,#4e342e,#3e2723);
+  color:var(--gold);font-weight:700;font-family:inherit;cursor:pointer;font-size:0.9rem;transition:all .2s}
+#guess-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,179,0,0.2);border-color:var(--gold)}
+#guess-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#autocomplete{position:absolute;top:100%;left:0;right:60px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;z-index:50;display:none}
+#autocomplete .ac-item{padding:8px 14px;cursor:pointer;font-size:0.85rem;color:var(--text);
+  border-bottom:1px solid var(--border);transition:background .15s}
+#autocomplete .ac-item:hover,#autocomplete .ac-item.active{background:var(--glass2);color:var(--accent)}
+#autocomplete .ac-item .sci{color:var(--text3);font-style:italic;margin-left:6px;font-size:0.8rem}
+#countdown{font-size:0.75rem;color:var(--text3);font-family:'Courier New',monospace}
+.share-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:6px 14px;
+  border-radius:8px;cursor:pointer;font-size:0.78rem;font-family:inherit;font-weight:700;transition:all .2s;display:none}
+.share-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(129,199,132,0.3)}
+#win-msg{display:none;margin-top:12px;padding:12px;border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(64,192,112,0.15),rgba(64,192,112,0.05));
+  border:1px solid rgba(64,192,112,0.3);text-align:center}
+#win-msg h3{color:var(--green);font-size:1.1rem;margin-bottom:4px}
+#win-msg p{color:var(--text2);font-size:0.85rem}
+
+/* WIKI PANEL */
+#wiki-panel{flex:1;overflow-y:auto;padding:20px}
+#wiki-panel::-webkit-scrollbar{width:6px}
+#wiki-panel::-webkit-scrollbar-thumb{background:var(--glass2);border-radius:3px}
+.wiki-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;animation:fadeIn .3s ease}
+.wiki-card h2{font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.wiki-card .wiki-sub{color:var(--accent);font-size:0.82rem;font-weight:500;margin-bottom:10px;font-style:italic}
+.wiki-card p{color:var(--text2);font-size:0.85rem;line-height:1.6;margin-bottom:12px}
+.wiki-card img{width:100%;border-radius:8px;margin-bottom:10px;max-height:220px;object-fit:cover}
+.wiki-card a{color:var(--accent);font-size:0.8rem;text-decoration:none}
+.wiki-card a:hover{text-decoration:underline}
+.wiki-placeholder{text-align:center;color:var(--text3);padding:40px 20px;font-size:0.9rem}
+.wiki-placeholder .icon{font-size:2.5rem;margin-bottom:12px;display:block}
+.common-animals{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.common-animals h3{font-size:0.85rem;color:var(--accent);font-weight:600;margin-bottom:8px}
+.common-animals ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.common-animals li{font-size:0.75rem;padding:3px 10px;border-radius:8px;background:var(--glass2);color:var(--text2);border:1px solid var(--border);text-transform:capitalize}
+
+/* GUESS LIST */
+#guess-list{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.guess-tag{font-size:0.75rem;padding:4px 10px;border-radius:8px;border:1px solid;font-weight:600;background:var(--glass)}
+
+/* TREE */
+#tree-container{flex:1;overflow:hidden;touch-action:none;position:relative;background:radial-gradient(ellipse at center,var(--bg2) 0%,var(--bg) 100%);order:2}
+#tree-svg{width:100%;height:100%;display:block}
+.tree-node{cursor:pointer;transition:filter .2s}
+.tree-node:hover{filter:brightness(1.2)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;
+  align-items:center;justify-content:center;animation:fadeIn .2s}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:32px;
+  max-width:420px;width:90%;text-align:center;box-shadow:var(--shadow)}
+.modal h2{font-size:1.8rem;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--green),#60e090);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.modal .stats{display:flex;justify-content:center;gap:24px;margin:16px 0}
+.modal .stat{text-align:center}
+.modal .stat .val{font-size:1.5rem;font-weight:700;color:var(--text)}
+.modal .stat .lbl{font-size:0.75rem;color:var(--text3)}
+.modal .modal-btns{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.modal .modal-btns button{padding:10px 20px;border-radius:var(--radius);border:none;font-family:inherit;
+  font-weight:600;cursor:pointer;font-size:0.9rem;transition:all .2s}
+.modal .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
+.modal .btn-secondary{background:var(--glass2);color:var(--text);border:1px solid var(--border)}
+.modal .close-btn{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text3);
+  font-size:1.3rem;cursor:pointer}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:768px){
+  html,body{height:auto;overflow-y:auto;overflow-x:hidden}
+  #app{height:auto}
+  main{flex-direction:column;overflow:visible}
+  #left-panel{width:100%;min-width:0;max-height:none;border-right:none;border-bottom:none;order:2;display:flex;flex-direction:column}
+  #guess-section{border-bottom:2px solid #5d4037}
+  #wiki-panel{padding:12px}
+  #tree-container{min-height:auto;height:auto;order:1;border-bottom:2px solid #5d4037;width:100%}
+  #tree-svg{max-width:none}
+}
+</style>
+  <script src="https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>🧬 Cladeify</h1>
+    <span class="game-num" id="game-num">Daily #1</span>
+    <span id="countdown"></span>
+    <button class="share-btn" id="share-btn" onclick="shareResults()">📋 Share</button>
+  </header>
+  <main>
+    <div id="tree-container">
+      <svg id="tree-svg"><g id="tree-layer"></g></svg>
+    </div>
+    <div id="left-panel">
+      <div id="guess-section">
+        <div style="display:flex;align-items:baseline">
+          <label>Enter your next guess.</label>
+          <span class="remaining" id="remaining">(20 remaining)</span>
+        </div>
+        <div id="input-row">
+          <input type="text" id="guess-input" placeholder="Type an animal..." autocomplete="off">
+          <button id="guess-btn" onclick="submitGuess()">Guess</button>
+          <div id="autocomplete"></div>
+        </div>
+
+        <div id="win-msg"><h3>🎉 You Win!</h3><p id="win-text"></p></div>
+        <div id="guess-list"></div>
+      </div>
+      <div id="wiki-panel">
+        <div class="wiki-placeholder"><span class="icon">🔍</span>Make a guess to see taxonomic info here.<br><br>
+        <span style="font-size:0.8rem;color:var(--text3)">The wiki will show the shared clade between your guess and the mystery animal.</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ============ ANIMAL DATABASE ============
+const ANIMALS = [
+  // === FELIDAE (cats) ===
+  {n:"cat",s:"Felis catus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"lion",s:"Panthera leo",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"tiger",s:"Panthera tigris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"cheetah",s:"Acinonyx jubatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"leopard",s:"Panthera pardus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"jaguar",s:"Panthera onca",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"snow leopard",s:"Panthera uncia",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"lynx",s:"Lynx lynx",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"cougar",s:"Puma concolor",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  {n:"serval",s:"Leptailurus serval",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Felidae"]},
+  // === CANIDAE (dogs) ===
+  {n:"dog",s:"Canis familiaris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  {n:"wolf",s:"Canis lupus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  {n:"red fox",s:"Vulpes vulpes",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  {n:"arctic fox",s:"Vulpes lagopus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  {n:"coyote",s:"Canis latrans",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  {n:"african wild dog",s:"Lycaon pictus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  {n:"fennec fox",s:"Vulpes zerda",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Canidae"]},
+  // === URSIDAE (bears) ===
+  {n:"bear",s:"Ursus arctos",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Ursidae"]},
+  {n:"polar bear",s:"Ursus maritimus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Ursidae"]},
+  {n:"panda",s:"Ailuropoda melanoleuca",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Ursidae"]},
+  {n:"sun bear",s:"Helarctos malayanus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Ursidae"]},
+  // === OTHER CARNIVORA ===
+  {n:"otter",s:"Lutra lutra",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Mustelidae"]},
+  {n:"wolverine",s:"Gulo gulo",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Mustelidae"]},
+  {n:"badger",s:"Meles meles",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Mustelidae"]},
+  {n:"ferret",s:"Mustela furo",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Mustelidae"]},
+  {n:"seal",s:"Phoca vitulina",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Phocidae"]},
+  {n:"walrus",s:"Odobenus rosmarus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Odobenidae"]},
+  {n:"sea lion",s:"Zalophus californianus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Otariidae"]},
+  {n:"raccoon",s:"Procyon lotor",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Procyonidae"]},
+  {n:"red panda",s:"Ailurus fulgens",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Ailuridae"]},
+  {n:"hyena",s:"Crocuta crocuta",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Hyaenidae"]},
+  {n:"meerkat",s:"Suricata suricatta",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Herpestidae"]},
+  {n:"mongoose",s:"Herpestes ichneumon",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Carnivora","Herpestidae"]},
+  // === PERISSODACTYLA (odd-toed ungulates) ===
+  {n:"horse",s:"Equus caballus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Perissodactyla","Equidae"]},
+  {n:"zebra",s:"Equus quagga",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Perissodactyla","Equidae"]},
+  {n:"donkey",s:"Equus asinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Perissodactyla","Equidae"]},
+  {n:"rhinoceros",s:"Rhinoceros unicornis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Perissodactyla","Rhinocerotidae"]},
+  {n:"tapir",s:"Tapirus terrestris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Perissodactyla","Tapiridae"]},
+  // === CETARTIODACTYLA (whales, dolphins, even-toed ungulates) ===
+  {n:"blue whale",s:"Balaenoptera musculus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Balaenopteridae"]},
+  {n:"humpback whale",s:"Megaptera novaeangliae",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Balaenopteridae"]},
+  {n:"dolphin",s:"Delphinus delphis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Delphinidae"]},
+  {n:"orca",s:"Orcinus orca",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Delphinidae"]},
+  {n:"narwhal",s:"Monodon monoceros",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Monodontidae"]},
+  {n:"beluga whale",s:"Delphinapterus leucas",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Monodontidae"]},
+  {n:"sperm whale",s:"Physeter macrocephalus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Physeteridae"]},
+  {n:"cow",s:"Bos taurus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"goat",s:"Capra aegagrus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"sheep",s:"Ovis aries",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"bison",s:"Bison bison",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"water buffalo",s:"Bubalus bubalis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"antelope",s:"Antilope cervicapra",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"wildebeest",s:"Connochaetes taurinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Bovidae"]},
+  {n:"deer",s:"Cervus elaphus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Cervidae"]},
+  {n:"moose",s:"Alces alces",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Cervidae"]},
+  {n:"reindeer",s:"Rangifer tarandus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Cervidae"]},
+  {n:"pig",s:"Sus domesticus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Suidae"]},
+  {n:"wild boar",s:"Sus scrofa",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Suidae"]},
+  {n:"giraffe",s:"Giraffa camelopardalis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Giraffidae"]},
+  {n:"okapi",s:"Okapia johnstoni",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Giraffidae"]},
+  {n:"hippopotamus",s:"Hippopotamus amphibius",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Hippopotamidae"]},
+  {n:"camel",s:"Camelus dromedarius",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Camelidae"]},
+  {n:"llama",s:"Lama glama",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Camelidae"]},
+  {n:"alpaca",s:"Vicugna pacos",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Cetartiodactyla","Camelidae"]},
+  // === CHIROPTERA (bats) ===
+  {n:"bat",s:"Pipistrellus pipistrellus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Chiroptera","Vespertilionidae"]},
+  {n:"fruit bat",s:"Pteropus vampyrus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Chiroptera","Pteropodidae"]},
+  {n:"vampire bat",s:"Desmodus rotundus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Chiroptera","Phyllostomidae"]},
+  // === INSECTIVORA-like ===
+  {n:"hedgehog",s:"Erinaceus europaeus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Eulipotyphla","Erinaceidae"]},
+  {n:"mole",s:"Talpa europaea",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Eulipotyphla","Talpidae"]},
+  {n:"shrew",s:"Sorex araneus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Eulipotyphla","Soricidae"]},
+  // === PRIMATES ===
+  {n:"human",s:"Homo sapiens",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Hominidae"]},
+  {n:"chimpanzee",s:"Pan troglodytes",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Hominidae"]},
+  {n:"gorilla",s:"Gorilla gorilla",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Hominidae"]},
+  {n:"orangutan",s:"Pongo pygmaeus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Hominidae"]},
+  {n:"bonobo",s:"Pan paniscus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Hominidae"]},
+  {n:"gibbon",s:"Hylobates lar",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Hylobatidae"]},
+  {n:"lemur",s:"Lemur catta",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Lemuridae"]},
+  {n:"baboon",s:"Papio anubis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Cercopithecidae"]},
+  {n:"mandrill",s:"Mandrillus sphinx",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Cercopithecidae"]},
+  {n:"macaque",s:"Macaca mulatta",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Cercopithecidae"]},
+  {n:"spider monkey",s:"Ateles geoffroyi",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Atelidae"]},
+  {n:"capuchin",s:"Cebus capucinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Cebidae"]},
+  {n:"marmoset",s:"Callithrix jacchus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Callitrichidae"]},
+  {n:"tarsier",s:"Tarsius tarsier",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Primates","Tarsiidae"]},
+  // === RODENTIA ===
+  {n:"mouse",s:"Mus musculus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Muridae"]},
+  {n:"rat",s:"Rattus norvegicus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Muridae"]},
+  {n:"hamster",s:"Mesocricetus auratus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Cricetidae"]},
+  {n:"gerbil",s:"Meriones unguiculatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Muridae"]},
+  {n:"squirrel",s:"Sciurus vulgaris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Sciuridae"]},
+  {n:"chipmunk",s:"Tamias striatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Sciuridae"]},
+  {n:"prairie dog",s:"Cynomys ludovicianus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Sciuridae"]},
+  {n:"beaver",s:"Castor canadensis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Castoridae"]},
+  {n:"capybara",s:"Hydrochoerus hydrochaeris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Caviidae"]},
+  {n:"guinea pig",s:"Cavia porcellus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Caviidae"]},
+  {n:"chinchilla",s:"Chinchilla lanigera",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Chinchillidae"]},
+  {n:"porcupine",s:"Erethizon dorsatum",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Erethizontidae"]},
+  {n:"naked mole rat",s:"Heterocephalus glaber",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Rodentia","Bathyergidae"]},
+  // === LAGOMORPHA ===
+  {n:"rabbit",s:"Oryctolagus cuniculus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Lagomorpha","Leporidae"]},
+  {n:"hare",s:"Lepus europaeus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Lagomorpha","Leporidae"]},
+  {n:"pika",s:"Ochotona princeps",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Euarchontoglires","Lagomorpha","Ochotonidae"]},
+  // === AFROTHERIA ===
+  {n:"elephant",s:"Loxodonta africana",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Proboscidea","Elephantidae"]},
+  {n:"asian elephant",s:"Elephas maximus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Proboscidea","Elephantidae"]},
+  {n:"manatee",s:"Trichechus manatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Sirenia","Trichechidae"]},
+  {n:"dugong",s:"Dugong dugon",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Sirenia","Dugongidae"]},
+  {n:"aardvark",s:"Orycteropus afer",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Tubulidentata","Orycteropodidae"]},
+  {n:"hyrax",s:"Procavia capensis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Hyracoidea","Procaviidae"]},
+  {n:"tenrec",s:"Tenrec ecaudatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Afrotheria","Afrosoricida","Tenrecidae"]},
+  // === XENARTHRA ===
+  {n:"armadillo",s:"Dasypus novemcinctus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Xenarthra","Cingulata","Dasypodidae"]},
+  {n:"sloth",s:"Bradypus variegatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Xenarthra","Pilosa","Bradypodidae"]},
+  {n:"anteater",s:"Myrmecophaga tridactyla",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Xenarthra","Pilosa","Myrmecophagidae"]},
+  {n:"pangolin",s:"Manis javanica",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Placentalia","Laurasiatheria","Pholidota","Manidae"]},
+  // === MARSUPIALIA ===
+  {n:"kangaroo",s:"Macropus rufus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Diprotodontia","Macropodidae"]},
+  {n:"wallaby",s:"Macropus agilis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Diprotodontia","Macropodidae"]},
+  {n:"koala",s:"Phascolarctos cinereus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Diprotodontia","Phascolarctidae"]},
+  {n:"wombat",s:"Vombatus ursinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Diprotodontia","Vombatidae"]},
+  {n:"opossum",s:"Didelphis virginiana",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Didelphimorphia","Didelphidae"]},
+  {n:"tasmanian devil",s:"Sarcophilus harrisii",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Dasyuromorphia","Dasyuridae"]},
+  {n:"quokka",s:"Setonix brachyurus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Diprotodontia","Macropodidae"]},
+  {n:"sugar glider",s:"Petaurus breviceps",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Marsupialia","Diprotodontia","Petauridae"]},
+  // === MONOTREMATA ===
+  {n:"platypus",s:"Ornithorhynchus anatinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Monotremata","Ornithorhynchidae"]},
+  {n:"echidna",s:"Tachyglossus aculeatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Mammalia","Monotremata","Tachyglossidae"]},
+  // === AVES (birds) ===
+  {n:"eagle",s:"Aquila chrysaetos",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Accipitriformes","Accipitridae"]},
+  {n:"hawk",s:"Buteo jamaicensis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Accipitriformes","Accipitridae"]},
+  {n:"vulture",s:"Gyps fulvus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Accipitriformes","Accipitridae"]},
+  {n:"osprey",s:"Pandion haliaetus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Accipitriformes","Pandionidae"]},
+  {n:"owl",s:"Bubo bubo",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Strigiformes","Strigidae"]},
+  {n:"barn owl",s:"Tyto alba",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Strigiformes","Tytonidae"]},
+  {n:"parrot",s:"Psittacus erithacus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Psittaciformes","Psittacidae"]},
+  {n:"cockatoo",s:"Cacatua galerita",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Psittaciformes","Cacatuidae"]},
+  {n:"macaw",s:"Ara macao",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Psittaciformes","Psittacidae"]},
+  {n:"budgerigar",s:"Melopsittacus undulatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Psittaciformes","Psittaculidae"]},
+  {n:"penguin",s:"Aptenodytes forsteri",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Sphenisciformes","Spheniscidae"]},
+  {n:"crow",s:"Corvus corax",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Corvidae"]},
+  {n:"blue jay",s:"Cyanocitta cristata",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Corvidae"]},
+  {n:"magpie",s:"Pica pica",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Corvidae"]},
+  {n:"sparrow",s:"Passer domesticus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Passeridae"]},
+  {n:"robin",s:"Erithacus rubecula",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Muscicapidae"]},
+  {n:"cardinal",s:"Cardinalis cardinalis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Cardinalidae"]},
+  {n:"finch",s:"Fringilla coelebs",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Fringillidae"]},
+  {n:"canary",s:"Serinus canaria",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Fringillidae"]},
+  {n:"swallow",s:"Hirundo rustica",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Hirundinidae"]},
+  {n:"starling",s:"Sturnus vulgaris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Passeriformes","Sturnidae"]},
+  {n:"chicken",s:"Gallus gallus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Galliformes","Phasianidae"]},
+  {n:"turkey",s:"Meleagris gallopavo",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Galliformes","Phasianidae"]},
+  {n:"peacock",s:"Pavo cristatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Galliformes","Phasianidae"]},
+  {n:"quail",s:"Coturnix coturnix",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Galliformes","Phasianidae"]},
+  {n:"duck",s:"Anas platyrhynchos",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Anseriformes","Anatidae"]},
+  {n:"swan",s:"Cygnus olor",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Anseriformes","Anatidae"]},
+  {n:"goose",s:"Anser anser",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Anseriformes","Anatidae"]},
+  {n:"hummingbird",s:"Archilochus colubris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Apodiformes","Trochilidae"]},
+  {n:"swift",s:"Apus apus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Apodiformes","Apodidae"]},
+  {n:"pigeon",s:"Columba livia",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Columbiformes","Columbidae"]},
+  {n:"flamingo",s:"Phoenicopterus roseus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Phoenicopteriformes","Phoenicopteridae"]},
+  {n:"pelican",s:"Pelecanus onocrotalus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Pelecaniformes","Pelecanidae"]},
+  {n:"heron",s:"Ardea cinerea",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Pelecaniformes","Ardeidae"]},
+  {n:"stork",s:"Ciconia ciconia",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Ciconiiformes","Ciconiidae"]},
+  {n:"albatross",s:"Diomedea exulans",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Procellariiformes","Diomedeidae"]},
+  {n:"seagull",s:"Larus argentatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Charadriiformes","Laridae"]},
+  {n:"puffin",s:"Fratercula arctica",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Charadriiformes","Alcidae"]},
+  {n:"ostrich",s:"Struthio camelus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Struthioniformes","Struthionidae"]},
+  {n:"emu",s:"Dromaius novaehollandiae",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Casuariiformes","Dromaiidae"]},
+  {n:"kiwi",s:"Apteryx mantelli",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Apterygiformes","Apterygidae"]},
+  {n:"kingfisher",s:"Alcedo atthis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Coraciiformes","Alcedinidae"]},
+  {n:"toucan",s:"Ramphastos toco",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Piciformes","Ramphastidae"]},
+  {n:"woodpecker",s:"Dendrocopos major",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Piciformes","Picidae"]},
+  {n:"falcon",s:"Falco peregrinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Falconiformes","Falconidae"]},
+  {n:"crane",s:"Grus grus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Gruiformes","Gruidae"]},
+  // === REPTILIA ===
+  {n:"crocodile",s:"Crocodylus niloticus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Crocodilia","Crocodylidae"]},
+  {n:"alligator",s:"Alligator mississippiensis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Crocodilia","Alligatoridae"]},
+  {n:"gharial",s:"Gavialis gangeticus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Crocodilia","Gavialidae"]},
+  {n:"cobra",s:"Naja naja",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Elapidae"]},
+  {n:"king cobra",s:"Ophiophagus hannah",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Elapidae"]},
+  {n:"rattlesnake",s:"Crotalus atrox",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Viperidae"]},
+  {n:"python",s:"Python bivittatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Pythonidae"]},
+  {n:"boa constrictor",s:"Boa constrictor",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Boidae"]},
+  {n:"anaconda",s:"Eunectes murinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Boidae"]},
+  {n:"iguana",s:"Iguana iguana",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Iguanidae"]},
+  {n:"chameleon",s:"Chamaeleo chamaeleon",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Chamaeleonidae"]},
+  {n:"gecko",s:"Gekko gecko",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Gekkonidae"]},
+  {n:"komodo dragon",s:"Varanus komodoensis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Varanidae"]},
+  {n:"gila monster",s:"Heloderma suspectum",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Helodermatidae"]},
+  {n:"skink",s:"Scincus scincus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Squamata","Scincidae"]},
+  {n:"sea turtle",s:"Chelonia mydas",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Testudines","Cheloniidae"]},
+  {n:"tortoise",s:"Testudo hermanni",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Testudines","Testudinidae"]},
+  {n:"box turtle",s:"Terrapene carolina",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Testudines","Emydidae"]},
+  {n:"tuatara",s:"Sphenodon punctatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Reptilia","Rhynchocephalia","Sphenodontidae"]},
+  // === AMPHIBIA ===
+  {n:"frog",s:"Rana temporaria",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Anura","Ranidae"]},
+  {n:"tree frog",s:"Hyla arborea",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Anura","Hylidae"]},
+  {n:"poison dart frog",s:"Dendrobates tinctorius",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Anura","Dendrobatidae"]},
+  {n:"toad",s:"Bufo bufo",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Anura","Bufonidae"]},
+  {n:"salamander",s:"Salamandra salamandra",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Urodela","Salamandridae"]},
+  {n:"axolotl",s:"Ambystoma mexicanum",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Urodela","Ambystomatidae"]},
+  {n:"newt",s:"Lissotriton vulgaris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Urodela","Salamandridae"]},
+  {n:"caecilian",s:"Caecilia tentaculata",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Amphibia","Gymnophiona","Caeciliidae"]},
+  // === ACTINOPTERYGII (bony fish) ===
+  {n:"salmon",s:"Salmo salar",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Salmoniformes","Salmonidae"]},
+  {n:"trout",s:"Oncorhynchus mykiss",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Salmoniformes","Salmonidae"]},
+  {n:"clownfish",s:"Amphiprion ocellaris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Perciformes","Pomacentridae"]},
+  {n:"tuna",s:"Thunnus thynnus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Perciformes","Scombridae"]},
+  {n:"swordfish",s:"Xiphias gladius",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Perciformes","Xiphiidae"]},
+  {n:"bass",s:"Micropterus salmoides",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Perciformes","Centrarchidae"]},
+  {n:"perch",s:"Perca fluviatilis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Perciformes","Percidae"]},
+  {n:"carp",s:"Cyprinus carpio",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Cypriniformes","Cyprinidae"]},
+  {n:"goldfish",s:"Carassius auratus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Cypriniformes","Cyprinidae"]},
+  {n:"zebrafish",s:"Danio rerio",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Cypriniformes","Cyprinidae"]},
+  {n:"catfish",s:"Silurus glanis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Siluriformes","Siluridae"]},
+  {n:"seahorse",s:"Hippocampus kuda",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Syngnathiformes","Syngnathidae"]},
+  {n:"pufferfish",s:"Tetraodon nigroviridis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Tetraodontiformes","Tetraodontidae"]},
+  {n:"anglerfish",s:"Lophius piscatorius",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Lophiiformes","Lophiidae"]},
+  {n:"piranha",s:"Pygocentrus nattereri",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Characiformes","Serrasalmidae"]},
+  {n:"eel",s:"Anguilla anguilla",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Anguilliformes","Anguillidae"]},
+  {n:"cod",s:"Gadus morhua",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Gadiformes","Gadidae"]},
+  {n:"pike",s:"Esox lucius",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Esociformes","Esocidae"]},
+  {n:"sturgeon",s:"Acipenser sturio",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Acipenseriformes","Acipenseridae"]},
+  {n:"flying fish",s:"Exocoetus volitans",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Beloniformes","Exocoetidae"]},
+  {n:"betta",s:"Betta splendens",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Actinopterygii","Anabantiformes","Osphronemidae"]},
+  // === CHONDRICHTHYES (cartilaginous fish) ===
+  {n:"great white shark",s:"Carcharodon carcharias",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Chondrichthyes","Lamniformes","Lamnidae"]},
+  {n:"hammerhead shark",s:"Sphyrna mokarran",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Chondrichthyes","Carcharhiniformes","Sphyrnidae"]},
+  {n:"whale shark",s:"Rhincodon typus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Chondrichthyes","Orectolobiformes","Rhincodontidae"]},
+  {n:"bull shark",s:"Carcharhinus leucas",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Chondrichthyes","Carcharhiniformes","Carcharhinidae"]},
+  {n:"manta ray",s:"Mobula birostris",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Chondrichthyes","Myliobatiformes","Mobulidae"]},
+  {n:"stingray",s:"Dasyatis pastinaca",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Chondrichthyes","Myliobatiformes","Dasyatidae"]},
+  // === INSECTS - ENDOPTERYGOTA ===
+  {n:"mosquito",s:"Aedes aegypti",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Diptera","Culicidae"]},
+  {n:"fruit fly",s:"Drosophila melanogaster",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Diptera","Drosophilidae"]},
+  {n:"housefly",s:"Musca domestica",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Diptera","Muscidae"]},
+  {n:"ladybug",s:"Coccinella septempunctata",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Coleoptera","Coccinellidae"]},
+  {n:"beetle",s:"Lucanus cervus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Coleoptera","Lucanidae"]},
+  {n:"firefly",s:"Photinus pyralis",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Coleoptera","Lampyridae"]},
+  {n:"dung beetle",s:"Scarabaeus sacer",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Coleoptera","Scarabaeidae"]},
+  {n:"weevil",s:"Sitophilus granarius",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Coleoptera","Curculionidae"]},
+  {n:"monarch butterfly",s:"Danaus plexippus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Lepidoptera","Nymphalidae"]},
+  {n:"moth",s:"Bombyx mori",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Lepidoptera","Bombycidae"]},
+  {n:"luna moth",s:"Actias luna",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Lepidoptera","Saturniidae"]},
+  {n:"bee",s:"Apis mellifera",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Hymenoptera","Apidae"]},
+  {n:"bumblebee",s:"Bombus terrestris",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Hymenoptera","Apidae"]},
+  {n:"wasp",s:"Vespula vulgaris",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Hymenoptera","Vespidae"]},
+  {n:"ant",s:"Formica rufa",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Hymenoptera","Formicidae"]},
+  {n:"fire ant",s:"Solenopsis invicta",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Hymenoptera","Formicidae"]},
+  {n:"flea",s:"Ctenocephalides felis",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Endopterygota","Siphonaptera","Pulicidae"]},
+  // === INSECTS - OTHER ===
+  {n:"dragonfly",s:"Anax imperator",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Palaeoptera","Odonata","Aeshnidae"]},
+  {n:"damselfly",s:"Calopteryx virgo",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Palaeoptera","Odonata","Calopterygidae"]},
+  {n:"grasshopper",s:"Schistocerca americana",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Orthoptera","Acrididae"]},
+  {n:"cricket",s:"Gryllus campestris",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Orthoptera","Gryllidae"]},
+  {n:"katydid",s:"Microcentrum rhombifolium",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Orthoptera","Tettigoniidae"]},
+  {n:"cockroach",s:"Periplaneta americana",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Blattodea","Blattidae"]},
+  {n:"termite",s:"Reticulitermes flavipes",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Blattodea","Rhinotermitidae"]},
+  {n:"praying mantis",s:"Mantis religiosa",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Mantodea","Mantidae"]},
+  {n:"stick insect",s:"Carausius morosus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Phasmatodea","Lonchodidae"]},
+  {n:"earwig",s:"Forficula auricularia",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Polyneoptera","Dermaptera","Forficulidae"]},
+  {n:"cicada",s:"Magicicada septendecim",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Paraneoptera","Hemiptera","Cicadidae"]},
+  {n:"aphid",s:"Aphis fabae",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Paraneoptera","Hemiptera","Aphididae"]},
+  {n:"bed bug",s:"Cimex lectularius",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Paraneoptera","Hemiptera","Cimicidae"]},
+  {n:"louse",s:"Pediculus humanus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Paraneoptera","Phthiraptera","Pediculidae"]},
+  {n:"silverfish",s:"Lepisma saccharina",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Insecta","Zygentoma","Lepismatidae"]},
+  // === ARACHNIDA ===
+  {n:"tarantula",s:"Theraphosa blondi",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Araneae","Theraphosidae"]},
+  {n:"black widow",s:"Latrodectus mactans",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Araneae","Theridiidae"]},
+  {n:"garden spider",s:"Araneus diadematus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Araneae","Araneidae"]},
+  {n:"jumping spider",s:"Salticus scenicus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Araneae","Salticidae"]},
+  {n:"wolf spider",s:"Lycosa tarantula",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Araneae","Lycosidae"]},
+  {n:"scorpion",s:"Pandinus imperator",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Scorpiones","Scorpionidae"]},
+  {n:"tick",s:"Ixodes ricinus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Arachnida","Ixodida","Ixodidae"]},
+  {n:"horseshoe crab",s:"Limulus polyphemus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Merostomata","Xiphosurida","Limulidae"]},
+  // === MYRIAPODA ===
+  {n:"centipede",s:"Scolopendra cingulata",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Chilopoda","Scolopendromorpha","Scolopendridae"]},
+  {n:"millipede",s:"Archispirostreptus gigas",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Diplopoda","Spirostreptida","Spirostreptidae"]},
+  // === CRUSTACEA ===
+  {n:"crab",s:"Cancer pagurus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Decapoda","Cancridae"]},
+  {n:"hermit crab",s:"Pagurus bernhardus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Decapoda","Paguridae"]},
+  {n:"king crab",s:"Paralithodes camtschaticus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Decapoda","Lithodidae"]},
+  {n:"lobster",s:"Homarus americanus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Decapoda","Nephropidae"]},
+  {n:"shrimp",s:"Penaeus monodon",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Decapoda","Penaeidae"]},
+  {n:"crayfish",s:"Astacus astacus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Decapoda","Astacidae"]},
+  {n:"mantis shrimp",s:"Odontodactylus scyllarus",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Stomatopoda","Odontodactylidae"]},
+  {n:"barnacle",s:"Balanus balanoides",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Maxillopoda","Sessilia","Balanidae"]},
+  {n:"woodlouse",s:"Armadillidium vulgare",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Isopoda","Armadillidiidae"]},
+  {n:"krill",s:"Euphausia superba",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Arthropoda","Malacostraca","Euphausiacea","Euphausiidae"]},
+  // === MOLLUSCA ===
+  {n:"octopus",s:"Octopus vulgaris",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Cephalopoda","Octopoda","Octopodidae"]},
+  {n:"giant squid",s:"Architeuthis dux",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Cephalopoda","Oegopsida","Architeuthidae"]},
+  {n:"squid",s:"Loligo vulgaris",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Cephalopoda","Myopsida","Loliginidae"]},
+  {n:"cuttlefish",s:"Sepia officinalis",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Cephalopoda","Sepiida","Sepiidae"]},
+  {n:"nautilus",s:"Nautilus pompilius",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Cephalopoda","Nautilida","Nautilidae"]},
+  {n:"snail",s:"Cornu aspersum",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Gastropoda","Stylommatophora","Helicidae"]},
+  {n:"snail",s:"Helix pomatia",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Gastropoda","Stylommatophora","Helicidae"]},
+  {n:"slug",s:"Arion vulgaris",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Gastropoda","Stylommatophora","Arionidae"]},
+  {n:"sea slug",s:"Chromodoris lochi",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Gastropoda","Nudibranchia","Chromodorididae"]},
+  {n:"abalone",s:"Haliotis rufescens",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Gastropoda","Lepetellida","Haliotidae"]},
+  {n:"clam",s:"Mercenaria mercenaria",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Bivalvia","Venerida","Veneridae"]},
+  {n:"oyster",s:"Crassostrea gigas",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Bivalvia","Ostreida","Ostreidae"]},
+  {n:"mussel",s:"Mytilus edulis",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Bivalvia","Mytilida","Mytilidae"]},
+  {n:"scallop",s:"Pecten maximus",t:["Animalia","Bilateria","Protostomia","Spiralia","Mollusca","Bivalvia","Pectinida","Pectinidae"]},
+  // === ANNELIDA ===
+  {n:"earthworm",s:"Lumbricus terrestris",t:["Animalia","Bilateria","Protostomia","Spiralia","Annelida","Clitellata","Crassiclitellata","Lumbricidae"]},
+  {n:"leech",s:"Hirudo medicinalis",t:["Animalia","Bilateria","Protostomia","Spiralia","Annelida","Clitellata","Hirudinida","Hirudinidae"]},
+  {n:"ragworm",s:"Nereis virens",t:["Animalia","Bilateria","Protostomia","Spiralia","Annelida","Polychaeta","Phyllodocida","Nereididae"]},
+  // === NEMATODA ===
+  {n:"roundworm",s:"Ascaris lumbricoides",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Nematoda","Chromadorea","Ascaridida","Ascarididae"]},
+  {n:"hookworm",s:"Ancylostoma duodenale",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Nematoda","Chromadorea","Strongylida","Ancylostomatidae"]},
+  // === PLATYHELMINTHES ===
+  {n:"tapeworm",s:"Taenia solium",t:["Animalia","Bilateria","Protostomia","Spiralia","Platyhelminthes","Cestoda","Cyclophyllidea","Taeniidae"]},
+  {n:"planarian",s:"Dugesia tigrina",t:["Animalia","Bilateria","Protostomia","Spiralia","Platyhelminthes","Rhabditophora","Tricladida","Dugesiidae"]},
+  // === ECHINODERMATA ===
+  {n:"starfish",s:"Asterias rubens",t:["Animalia","Bilateria","Deuterostomia","Echinodermata","Asteroidea","Forcipulatida","Asteriidae"]},
+  {n:"brittle star",s:"Ophiothrix fragilis",t:["Animalia","Bilateria","Deuterostomia","Echinodermata","Ophiuroidea","Ophiurida","Ophiotrichidae"]},
+  {n:"sea urchin",s:"Strongylocentrotus purpuratus",t:["Animalia","Bilateria","Deuterostomia","Echinodermata","Echinoidea","Camarodonta","Strongylocentrotidae"]},
+  {n:"sea cucumber",s:"Holothuria tubulosa",t:["Animalia","Bilateria","Deuterostomia","Echinodermata","Holothuroidea","Holothuriida","Holothuriidae"]},
+  {n:"sand dollar",s:"Echinarachnius parma",t:["Animalia","Bilateria","Deuterostomia","Echinodermata","Echinoidea","Clypeasteroida","Echinarachniidae"]},
+  // === CNIDARIA ===
+  {n:"jellyfish",s:"Aurelia aurita",t:["Animalia","Cnidaria","Scyphozoa","Semaeostomeae","Ulmaridae"]},
+  {n:"box jellyfish",s:"Chironex fleckeri",t:["Animalia","Cnidaria","Cubozoa","Chirodropida","Chirodropidae"]},
+  {n:"coral",s:"Acropora millepora",t:["Animalia","Cnidaria","Anthozoa","Scleractinia","Acroporidae"]},
+  {n:"sea anemone",s:"Actinia equina",t:["Animalia","Cnidaria","Anthozoa","Actiniaria","Actiniidae"]},
+  {n:"hydra",s:"Hydra vulgaris",t:["Animalia","Cnidaria","Hydrozoa","Anthoathecata","Hydridae"]},
+  {n:"portuguese man o war",s:"Physalia physalis",t:["Animalia","Cnidaria","Hydrozoa","Siphonophorae","Physaliidae"]},
+  // === PORIFERA (sponges) ===
+  {n:"sponge",s:"Spongia officinalis",t:["Animalia","Porifera","Demospongiae","Dictyoceratida","Spongiidae"]},
+  // === CTENOPHORA ===
+  {n:"comb jelly",s:"Mnemiopsis leidyi",t:["Animalia","Ctenophora","Tentaculata","Lobata","Bolinopsidae"]},
+  // === ROTIFERA ===
+  {n:"rotifer",s:"Brachionus plicatilis",t:["Animalia","Bilateria","Protostomia","Spiralia","Rotifera","Monogononta","Ploima","Brachionidae"]},
+  // === TARDIGRADA ===
+  {n:"tardigrade",s:"Milnesium tardigradum",t:["Animalia","Bilateria","Protostomia","Ecdysozoa","Tardigrada","Eutardigrada","Apochela","Milnesiidae"]},
+  // === TUNICATES ===
+  {n:"sea squirt",s:"Ciona intestinalis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Tunicata","Ascidiacea","Phlebobranchia","Cionidae"]},
+  // === LANCELETS ===
+  {n:"lancelet",s:"Branchiostoma lanceolatum",t:["Animalia","Bilateria","Deuterostomia","Chordata","Cephalochordata","Leptocardii","Amphioxiformes","Branchiostomidae"]},
+  // === JAWLESS FISH ===
+  {n:"lamprey",s:"Petromyzon marinus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Cyclostomata","Petromyzontiformes","Petromyzontidae"]},
+  {n:"hagfish",s:"Myxine glutinosa",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Cyclostomata","Myxiniformes","Myxinidae"]},
+  // === COELACANTH ===
+  {n:"coelacanth",s:"Latimeria chalumnae",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Sarcopterygii","Coelacanthiformes","Latimeriidae"]},
+  // === LUNGFISH ===
+  {n:"lungfish",s:"Neoceratodus forsteri",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Sarcopterygii","Ceratodontiformes","Neoceratodontidae"]},
+];
+
+// ============ DAILY PUZZLE SYSTEM ============
+// Seeded PRNG (mulberry32)
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+
+// Get the current puzzle day number. Resets at 1pm PT (UTC-7 = 20:00 UTC)
+function getPuzzleDay(){
+  const EPOCH=new Date('2026-04-08T20:00:00Z').getTime(); // First puzzle: Apr 8 2026 at 1pm PT
+  const now=Date.now();
+  const MS_PER_DAY=86400000;
+  return Math.floor((now-EPOCH)/MS_PER_DAY);
+}
+
+// Build a deterministic permutation of all animal indices for a given cycle
+function getDailyAnimal(dayNum){
+  const n=ANIMALS.length;
+  const cycle=Math.floor(dayNum/n);
+  const indexInCycle=((dayNum%n)+n)%n; // handle negative days gracefully
+  // Create a seeded shuffle for this cycle
+  const rng=mulberry32(cycle*7919+31337);
+  const indices=[...Array(n).keys()];
+  // Fisher-Yates shuffle with seeded rng
+  for(let i=n-1;i>0;i--){
+    const j=Math.floor(rng()*((i+1)|0));
+    [indices[i],indices[j]]=[indices[j],indices[i]];
+  }
+  return ANIMALS[indices[indexInCycle]];
+}
+
+// Time until next puzzle
+function getTimeUntilReset(){
+  const EPOCH=new Date('2026-04-08T20:00:00Z').getTime();
+  const MS_PER_DAY=86400000;
+  const now=Date.now();
+  const elapsed=(now-EPOCH)%MS_PER_DAY;
+  const remaining=MS_PER_DAY-elapsed;
+  const h=Math.floor(remaining/3600000);
+  const m=Math.floor((remaining%3600000)/60000);
+  const s=Math.floor((remaining%60000)/1000);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ============ GAME STATE ============
+let answer=null, guesses=[], maxGuesses=20, gameOver=false, puzzleDay=0;
+
+// ============ GAME LOGIC ============
+function findAnimal(name){return ANIMALS.find(a=>a.n.toLowerCase()===name.toLowerCase())}
+function getLCA(t1,t2){
+  let i=0;while(i<t1.length&&i<t2.length&&t1[i]===t2[i])i++;
+  return {clade:t1[i-1],depth:i-1,path1:t1.slice(0,i),path2:t2.slice(0,i)};
+}
+// Metazooa-accurate color palette: dark red → sienna → golden → olive → green
+function getColor(depth,maxD){
+  const ratio=Math.min(depth/Math.max(maxD,1),1);
+  const stops=[
+    [139,26,26],   // 0.00 dark red
+    [160,82,45],   // 0.25 sienna
+    [139,117,20],  // 0.50 dark golden
+    [107,142,35],  // 0.75 olive drab
+    [46,125,50]    // 1.00 green
+  ];
+  const seg=ratio*(stops.length-1);
+  const idx=Math.min(Math.floor(seg),stops.length-2);
+  const t=seg-idx;
+  const c1=stops[idx],c2=stops[idx+1];
+  const r=Math.round(c1[0]+(c2[0]-c1[0])*t);
+  const g=Math.round(c1[1]+(c2[1]-c1[1])*t);
+  const b=Math.round(c1[2]+(c2[2]-c1[2])*t);
+  return `rgb(${r},${g},${b})`;
+}
+const ANSWER_COLOR='#4DB6AC'; // teal for ???
+let oldPositions = {};
+let rootPos = {x: 300, y: 40};
+
+function getGuessNodeColor(guessAnimal){
+  const lca=getLCA(guessAnimal.t,answer.t);
+  return getColor(lca.depth,answer.t.length-1);
+}
+function loadDailyGame(){
+  puzzleDay=getPuzzleDay();
+  answer=getDailyAnimal(puzzleDay);
+  const dayLabel=Math.max(puzzleDay+1,1);
+  document.getElementById('game-num').textContent='Daily #'+dayLabel;
+
+  // Try restore today's progress from localStorage
+  const saved=localStorage.getItem('cladeify_daily');
+  if(saved){
+    try{
+      const data=JSON.parse(saved);
+      if(data.day===puzzleDay){
+        // Restore state
+        guesses=data.guesses.map(n=>n?findAnimal(n):null).filter(g=>g!==undefined);
+        gameOver=data.gameOver||false;
+        oldPositions={};
+        // Rebuild guess tags
+        const list=document.getElementById('guess-list');
+        list.innerHTML='';
+        for(const g of guesses){
+          if(!g)continue;
+          const col=getGuessNodeColor(g);
+          const tag=document.createElement('span');
+          tag.className='guess-tag';tag.textContent=g.n;
+          tag.style.borderColor=col;tag.style.color=col;
+          list.appendChild(tag);
+        }
+        const rem=maxGuesses-guesses.length;
+        document.getElementById('remaining').textContent=`(${rem} remaining)`;
+        if(gameOver){
+          document.getElementById('guess-input').disabled=true;
+          document.getElementById('guess-btn').disabled=true;
+          document.getElementById('win-msg').style.display='block';
+          // Check if they won or lost
+          if(guesses.some(g=>g&&g.n===answer.n)){
+            document.getElementById('win-text').textContent=`The answer was ${answer.n}! You got it in ${guesses.filter(g=>g).length} guess${guesses.filter(g=>g).length>1?'es':''}!`;
+            document.getElementById('share-btn').style.display='inline-block';
+          }else{
+            document.getElementById('win-msg').querySelector('h3').textContent='😔 Game Over';
+            document.getElementById('win-msg').querySelector('h3').style.color='var(--red)';
+            document.getElementById('win-text').textContent=`The answer was ${answer.n}.`;
+            document.getElementById('share-btn').style.display='inline-block';
+          }
+        }
+        renderTree();
+        return;
+      }
+    }catch(e){}
+  }
+  // Fresh daily game
+  guesses=[];gameOver=false;oldPositions={};
+  document.getElementById('remaining').textContent=`(${maxGuesses} remaining)`;
+  document.getElementById('guess-input').value='';
+  document.getElementById('guess-input').disabled=false;
+  document.getElementById('guess-btn').disabled=false;
+  document.getElementById('win-msg').style.display='none';
+  document.getElementById('share-btn').style.display='none';
+  document.getElementById('guess-list').innerHTML='';
+  document.getElementById('wiki-panel').innerHTML='<div class="wiki-placeholder"><span class="icon">🔍</span>Make a guess to see taxonomic info here.</div>';
+  renderTree();
+}
+
+function saveDailyState(){
+  const data={
+    day:puzzleDay,
+    guesses:guesses.map(g=>g?g.n:null),
+    gameOver:gameOver
+  };
+  localStorage.setItem('cladeify_daily',JSON.stringify(data));
+}
+function submitGuess(){
+  if(gameOver)return;
+  const inp=document.getElementById('guess-input');
+  const name=inp.value.trim().toLowerCase();
+  if(!name)return;
+  const animal=findAnimal(name);
+  if(!animal){showToast("Animal not found! Try another.");return;}
+  if(guesses.find(g=>g.n===animal.n)){showToast("Already guessed!");inp.value='';return;}
+  document.getElementById('autocomplete').style.display='none';
+  guesses.push(animal);
+  saveDailyState();
+  const rem=maxGuesses-guesses.length;
+  document.getElementById('remaining').textContent=`(${rem} remaining)`;
+  inp.value='';
+  // Add tag
+  const lca=getLCA(animal.t,answer.t);
+  const col=getGuessNodeColor(animal);
+  const list=document.getElementById('guess-list');
+  const tag=document.createElement('span');
+  tag.className='guess-tag';tag.textContent=animal.n;
+  tag.style.borderColor=col;tag.style.color=col;
+  list.appendChild(tag);
+  // Check win
+  if(animal.n===answer.n){
+    gameOver=true;
+    document.getElementById('win-msg').style.display='block';
+    document.getElementById('win-text').textContent=`The answer was ${answer.n}! You got it in ${guesses.length} guess${guesses.length>1?'es':''}!`;
+    document.getElementById('guess-input').disabled=true;
+    document.getElementById('guess-btn').disabled=true;
+    document.getElementById('share-btn').style.display='inline-block';
+    saveDailyState();
+    showWikiForAnimal(answer,true);
+  }else{
+    showWikiForClade(lca.clade,animal.n);
+  }
+  if(rem<=0&&!gameOver){
+    gameOver=true;
+    document.getElementById('win-msg').style.display='block';
+    document.getElementById('win-msg').querySelector('h3').textContent='😔 Game Over';
+    document.getElementById('win-msg').querySelector('h3').style.color='var(--red)';
+    document.getElementById('win-text').textContent=`The answer was ${answer.n}.`;
+    document.getElementById('guess-input').disabled=true;
+    document.getElementById('guess-btn').disabled=true;
+    document.getElementById('share-btn').style.display='inline-block';
+    saveDailyState();
+  }
+  renderTree();
+}
+// ============ SHARE RESULTS ============
+function shareResults(){
+  const dayLabel=Math.max(puzzleDay+1,1);
+  const won=guesses.some(g=>g&&g.n===answer.n);
+  const realGuesses=guesses.filter(g=>g!==null);
+  let text=`🧬 Cladeify Daily #${dayLabel}\n`;
+  text+=won?`Guessed in ${realGuesses.length}/${maxGuesses}!\n`:`X/${maxGuesses}\n`;
+  text+='\n';
+  // Build emoji grid based on guess closeness
+  for(const g of realGuesses){
+    const lca=getLCA(g.t,answer.t);
+    const ratio=lca.depth/(answer.t.length-1);
+    if(g.n===answer.n) text+='🟩';
+    else if(ratio>=0.7) text+='🟨';
+    else if(ratio>=0.4) text+='🟧';
+    else text+='🟥';
+  }
+  text+='\nhttps://cladeify.com'; // placeholder URL
+  navigator.clipboard.writeText(text).then(()=>showToast('Results copied to clipboard!')).catch(()=>showToast('Could not copy'));
+}
+
+// ============ COUNTDOWN TIMER ============
+function updateCountdown(){
+  const el=document.getElementById('countdown');
+  if(el) el.textContent='Next puzzle in '+getTimeUntilReset();
+  // Check if the day rolled over
+  const currentDay=getPuzzleDay();
+  if(currentDay!==puzzleDay){
+    loadDailyGame(); // auto-refresh to new puzzle
+  }
+}
+setInterval(updateCountdown,1000);
+
+// ============ WIKI ============
+function getCommonAnimalsHtml(clade){
+  // Find animals from the database whose taxonomy includes this clade
+  const matches=ANIMALS.filter(a=>a.t.includes(clade));
+  // Shuffle and pick up to 12, exclude the answer to avoid spoilers
+  const filtered=matches.filter(a=>!answer||a.n!==answer.n);
+  const shuffled=filtered.sort(()=>Math.random()-0.5).slice(0,12);
+  if(shuffled.length===0)return '';
+  let html='<div class="common-animals">';
+  html+=`<h3>🐾 Common Animals in ${clade}</h3><ul>`;
+  for(const a of shuffled){
+    html+=`<li>${a.n}</li>`;
+  }
+  html+='</ul></div>';
+  return html;
+}
+async function showWikiForClade(clade,guessName){
+  const wp=document.getElementById('wiki-panel');
+  wp.innerHTML='<div class="wiki-card"><h2>'+clade+'</h2><p style="color:var(--text3)">Loading from Wikipedia...</p></div>';
+  try{
+    const r=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(clade)}`);
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    let html='<div class="wiki-card">';
+    html+=`<h2>${d.title||clade}</h2>`;
+    if(guessName)html+=`<div class="wiki-sub">The answer and ${guessName} have this in common.</div>`;
+    if(d.thumbnail)html+=`<img src="${d.thumbnail.source}" alt="${clade}">`;
+    html+=`<p>${d.extract||'No description available.'}</p>`;
+    html+=`<a href="${d.content_urls?.desktop?.page||'#'}" target="_blank">📖 Read more on Wikipedia</a>`;
+    html+=getCommonAnimalsHtml(clade);
+    html+='</div>';
+    wp.innerHTML=html;
+  }catch(e){
+    let html=`<div class="wiki-card"><h2>${clade}</h2><div class="wiki-sub">${guessName?'The answer and '+guessName+' share this clade.':''}</div><p>Could not load Wikipedia info.</p>`;
+    html+=getCommonAnimalsHtml(clade);
+    html+='</div>';
+    wp.innerHTML=html;
+  }
+}
+async function showWikiForAnimal(animal,isAnswer){
+  const wp=document.getElementById('wiki-panel');
+  const searchTerm=animal.s||animal.n;
+  wp.innerHTML='<div class="wiki-card"><h2>'+animal.n+'</h2><p style="color:var(--text3)">Loading...</p></div>';
+  try{
+    const r=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`);
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    let html='<div class="wiki-card">';
+    html+=`<h2>${animal.n} <span style="color:var(--text3);font-weight:400;font-size:0.85rem">(${animal.s})</span></h2>`;
+    if(isAnswer) html+=`<div class="wiki-sub">🎉 You found it!</div>`;
+    if(d.thumbnail)html+=`<img src="${d.thumbnail.source}" alt="${animal.n}">`;
+    html+=`<p>${d.extract||''}</p>`;
+    html+=`<a href="${d.content_urls?.desktop?.page||'#'}" target="_blank">📖 Read more on Wikipedia</a>`;
+    const lastClade=animal.t[animal.t.length-1];
+    html+=getCommonAnimalsHtml(lastClade);
+    html+='</div>';
+    wp.innerHTML=html;
+  }catch(e){
+    wp.innerHTML=`<div class="wiki-card"><h2>${animal.n}</h2><div class="wiki-sub">(${animal.s})</div>${isAnswer?'<p>🎉 Correct!</p>':''}${getCommonAnimalsHtml(animal.t[animal.t.length-1])}</div>`;
+  }
+}
+function showToast(msg){
+  let t=document.createElement('div');
+  t.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:10px 20px;border-radius:10px;border:1px solid var(--border);font-size:0.85rem;z-index:999;animation:fadeIn .2s';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+// ============ TREE RENDERING ============
+function buildTrie(){
+  const root={name:'Animalia',children:{},isAnimal:false,animalData:null,depth:0};
+  const realGuesses=guesses.filter(g=>g!==null);
+  const allPaths=[...realGuesses.map(g=>({path:[...g.t,g.n],animal:g,isAnswer:false}))];
+  if(realGuesses.length>0){
+    allPaths.push({path:[...answer.t,answer.n],animal:answer,isAnswer:true});
+  }
+  for(const {path,animal,isAnswer} of allPaths){
+    let node=root;
+    for(let i=1;i<path.length;i++){
+      const name=path[i];
+      if(!node.children[name]){
+        node.children[name]={name,children:{},isAnimal:false,animalData:null,depth:i,isAnswer:false};
+      }
+      node=node.children[name];
+    }
+    node.isAnimal=true;
+    node.animalData=animal;
+    node.isAnswer=isAnswer;
+  }
+  return root;
+}
+function pruneTrie(node){
+  const childKeys=Object.keys(node.children);
+  // Recursively prune children first
+  for(const k of childKeys)pruneTrie(node.children[k]);
+  // If only one child and this is not root and not an animal, merge with child
+  const ks=Object.keys(node.children);
+  if(ks.length===1&&!node.isAnimal&&node.name!=='Animalia'){
+    const child=node.children[ks[0]];
+    node.children=child.children;
+    node.name=child.name;
+    node.isAnimal=child.isAnimal;
+    node.animalData=child.animalData;
+    node.depth=child.depth;
+    node.isAnswer=child.isAnswer;
+  }
+}
+function layoutNode(node,x,y,w){
+  node.x=x;node.y=y;node.w=w;
+  const kids=Object.values(node.children);
+  if(kids.length===0)return;
+  const leafCount=k=>Object.keys(k.children).length===0?1:Object.values(k.children).reduce((s,c)=>s+leafCount(c),0);
+  const counts=kids.map(k=>leafCount(k));
+  const total=counts.reduce((a,b)=>a+b,0);
+  let cx=x-w/2;
+  const vGap=110;
+  for(let i=0;i<kids.length;i++){
+    const cw=(counts[i]/total)*w;
+    layoutNode(kids[i],cx+cw/2,y+vGap,cw);
+    cx+=cw;
+  }
+}
+
+function getNodeColor(node){
+  if(node.isAnswer&&!gameOver) return ANSWER_COLOR;
+  if(node.isAnswer&&gameOver) return '#2E7D32';
+  if(node.isAnimal&&node.animalData){
+    return getGuessNodeColor(node.animalData);
+  }
+  return getColor(node.depth,answer.t.length-1);
+}
+
+function drawEdges(svg, node, parent) {
+  if (parent) {
+    const parentId = parent.isAnimal ? "A-"+parent.name : "C-"+parent.name;
+    const nodeId = node.isAnimal ? "A-"+node.name : "C-"+node.name;
+    const col = getNodeColor(node);
+
+    const oldParent = oldPositions[parentId] || rootPos;
+    const oldNode = oldPositions[nodeId] || rootPos;
+    
+    // Create bezier curves to look like natural wood branches
+    const my = parent.y + Math.max(30, (node.y - parent.y)/2);
+    const newD = `M${parent.x},${parent.y+16} C${parent.x},${my} ${node.x},${my} ${node.x},${node.y-16}`;
+
+    const oldMy = oldParent.y + Math.max(30, (oldNode.y - oldParent.y)/2);
+    const oldD = `M${oldParent.x},${oldParent.y+16} C${oldParent.x},${oldMy} ${oldNode.x},${oldMy} ${oldNode.x},${oldNode.y-16}`;
+
+    const pathGrp = document.createElementNS('http://www.w3.org/2000/svg','g');
+    
+    // Thick wood branch
+    const branch = document.createElementNS('http://www.w3.org/2000/svg','path');
+    branch.setAttribute('fill', 'none');
+    branch.setAttribute('stroke', col); 
+    branch.setAttribute('stroke-width', '4');
+    branch.setAttribute('stroke-linecap', 'round');
+    branch.animate([{d:`path('${oldD}')`}, {d:`path('${newD}')`}], {duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards'});
+    
+    // Thin vine wrapping around it overlay
+    const vine = document.createElementNS('http://www.w3.org/2000/svg','path');
+    vine.setAttribute('fill', 'none');
+    vine.setAttribute('stroke', 'rgba(255,255,255,0.4)');
+    vine.setAttribute('stroke-width', '1.5');
+    vine.setAttribute('stroke-dasharray', '8 12');
+    vine.animate([{d:`path('${oldD}')`}, {d:`path('${newD}')`}], {duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards'});
+
+    pathGrp.appendChild(branch);
+    pathGrp.appendChild(vine);
+    svg.appendChild(pathGrp);
+  }
+  for (const child of Object.values(node.children)) drawEdges(svg, child, node);
+}
+
+function drawNodes(svg, node, parent) {
+  const nodeId = node.isAnimal ? "A-"+node.name : "C-"+node.name;
+  const col = getNodeColor(node);
+  
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','tree-node');
+  
+  const oldPos = oldPositions[nodeId] || rootPos;
+  oldPositions[nodeId] = {x: node.x, y: node.y};
+  
+  // WAAPI for smooth transition from previous spot or from root Animalia
+  g.animate([
+    { transform: `translate(${oldPos.x}px, ${oldPos.y}px)` },
+    { transform: `translate(${node.x}px, ${node.y}px)` }
+  ], { duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards' });
+
+  const label = node.isAnimal ? (node.isAnswer && !gameOver ? '???' : node.name) : node.name;
+  const tw = Math.max(label.length*8+24, 60);
+  
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x', -tw/2); rect.setAttribute('y', -16);
+  rect.setAttribute('width', tw); rect.setAttribute('height', 32);
+  rect.setAttribute('rx', 8); rect.setAttribute('ry', 8);
+  
+  if(node.isAnimal){
+    rect.setAttribute('fill','rgba(20,31,23,0.9)');
+    rect.setAttribute('stroke',col);
+    rect.setAttribute('stroke-width','2');
+    if(node.isAnswer&&gameOver) rect.setAttribute('fill',col);
+  }else{
+    rect.setAttribute('fill',col);
+    rect.setAttribute('stroke',col);
+  }
+  g.appendChild(rect);
+  
+  const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('x', 0); text.setAttribute('y', 0);
+  text.textContent = label;
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('dominant-baseline', 'middle');
+  text.setAttribute('font-family', 'Inter, sans-serif');
+  
+  if(!node.isAnimal||(node.isAnswer&&gameOver)){
+    text.setAttribute('fill','#fff');
+  }else{
+    text.setAttribute('fill',col);
+  }
+  text.setAttribute('font-weight',node.isAnimal?'500':'700');
+  text.setAttribute('font-size',node.isAnimal?'12':'11');
+  g.appendChild(text);
+  
+  // Don't allow clicking ??? before game is over
+  if(node.isAnswer&&!gameOver){
+    g.style.cursor = 'default';
+  }else{
+    g.style.cursor = 'pointer';
+    g.addEventListener('click',()=>{
+      if(node.isAnimal&&node.animalData){
+        showWikiForAnimal(node.animalData, node.isAnswer);
+      }else{
+        showWikiForClade(node.name,null);
+      }
+    });
+  }
+  
+  svg.appendChild(g);
+  for(const child of Object.values(node.children)) drawNodes(svg, child, node);
+}
+
+const totalLeaves=(n)=>Object.keys(n.children).length===0?1:Object.values(n.children).reduce((s,c)=>s+totalLeaves(c),0);
+const getMaxDepth=(n)=>Object.keys(n.children).length===0?0:1+Math.max(...Object.values(n.children).map(c=>getMaxDepth(c)));
+
+function renderTree() {
+  const layer = document.getElementById('tree-layer');
+  layer.innerHTML = '';
+  
+  const trie = buildTrie();
+  // Always attach "???" if game just started
+  if(guesses.filter(g=>g!==null).length === 0){
+    trie.children['???'] = {name:'???', children:{}, isAnimal:true, isAnswer:true, depth:1, animalData: answer};
+  }
+
+  pruneTrie(trie);
+  
+  const tl = totalLeaves(trie);
+  const isMobile = window.innerWidth <= 768;
+  const leafW = isMobile ? 100 : 160;
+  const minW = isMobile ? Math.min(window.innerWidth, 400) : 600;
+  const svgW = Math.max(minW, tl*leafW);
+  const md = getMaxDepth(trie);
+  const svgH = Math.max(400, (md+1)*110+80); // More vertical room for vines
+  
+  layoutNode(trie, svgW/2, 40, svgW-80);
+  rootPos = {x: trie.x, y: trie.y};
+  
+  // Draw all edges first, then nodes on top
+  drawEdges(layer, trie, null);
+  drawNodes(layer, trie, null);
+  
+  // Setup panzoom auto-zoom
+  const cont = document.getElementById('tree-container');
+  const cw = cont.clientWidth;
+  const ch = cont.clientHeight;
+  
+  const scale = Math.min(Math.min(cw/svgW, ch/svgH) * 0.95, isMobile ? 0.9 : 1.2);
+  const tx = cw/2 - (svgW/2)*scale;
+  const ty = Math.max(20, ch*0.05); // slightly from top
+  
+  if (window.pz) window.pz.dispose();
+  
+  layer.style.transformOrigin = "0 0";
+  layer.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${tx}, ${ty})`;
+  
+  window.pz = panzoom(layer, {
+      maxZoom: 5,
+      minZoom: 0.05,
+      bounds: true,
+      boundsPadding: 0.1
+  });
+}
+
+// ============ AUTOCOMPLETE ============
+(function(){
+  const inp=document.getElementById('guess-input');
+  const ac=document.getElementById('autocomplete');
+  let selIdx=-1;
+  inp.addEventListener('input',()=>{
+    const v=inp.value.trim().toLowerCase();
+    ac.innerHTML='';selIdx=-1;
+    if(v.length<1){ac.style.display='none';return;}
+    const matches=ANIMALS.filter(a=>a.n.toLowerCase().includes(v)).slice(0,8);
+    if(matches.length===0){ac.style.display='none';return;}
+    ac.style.display='block';
+    matches.forEach((a,i)=>{
+      const div=document.createElement('div');
+      div.className='ac-item';
+      div.innerHTML=a.n+'<span class="sci">'+a.s+'</span>';
+      div.addEventListener('click',()=>{inp.value=a.n;ac.style.display='none';});
+      ac.appendChild(div);
+    });
+  });
+  inp.addEventListener('keydown',(e)=>{
+    const items=ac.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();selIdx=Math.min(selIdx+1,items.length-1);updateSel(items);}
+    else if(e.key==='ArrowUp'){e.preventDefault();selIdx=Math.max(selIdx-1,0);updateSel(items);}
+    else if(e.key==='Enter'){
+      if(selIdx>=0&&items[selIdx]){inp.value=ANIMALS.filter(a=>a.n.toLowerCase().includes(inp.value.trim().toLowerCase()))[selIdx]?.n||inp.value;ac.style.display='none';}
+      submitGuess();
+    }
+  });
+  function updateSel(items){items.forEach((it,i)=>it.classList.toggle('active',i===selIdx));}
+  document.addEventListener('click',(e)=>{if(!inp.contains(e.target)&&!ac.contains(e.target))ac.style.display='none';});
+})();
+
+// ============ INIT ============
+loadDailyGame();
+updateCountdown();
+</script>
+</body>
+</html>
