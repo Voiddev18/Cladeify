@@ -118,7 +118,7 @@ main{display:flex;flex:1;overflow:hidden}
   #left-panel{width:100%;min-width:0;max-height:none;border-right:none;border-bottom:none;order:2;display:flex;flex-direction:column}
   #guess-section{border-bottom:2px solid #5d4037}
   #wiki-panel{padding:12px}
-  #tree-container{height:50vh;flex-shrink:0;order:1;border-bottom:2px solid #5d4037;width:100%;overflow:hidden;touch-action:none}
+  #tree-container{flex-shrink:0;order:1;border-bottom:2px solid #5d4037;width:100%}
   #tree-svg{max-width:none;width:100%;height:100%}
 }
 </style>
@@ -341,7 +341,7 @@ const ANIMALS = [
   {n:"seagull",s:"Larus argentatus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Charadriiformes","Laridae"]},
   {n:"puffin",s:"Fratercula arctica",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Charadriiformes","Alcidae"]},
   {n:"ostrich",s:"Struthio camelus",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Struthioniformes","Struthionidae"]},
-  {n:"emu",s:"Dromaius novaehollandiae",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Casuariiformes","Casuariidae"]},
+  {n:"emu",s:"Dromaius novaehollandiae",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Casuariiformes","Dromaiidae"]},
   {n:"kiwi",s:"Apteryx mantelli",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Apterygiformes","Apterygidae"]},
   {n:"kingfisher",s:"Alcedo atthis",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Coraciiformes","Alcedinidae"]},
   {n:"toucan",s:"Ramphastos toco",t:["Animalia","Bilateria","Deuterostomia","Chordata","Vertebrata","Aves","Piciformes","Ramphastidae"]},
@@ -635,11 +635,13 @@ function loadDailyGame(){
           if(guesses.some(g=>g&&g.n===answer.n)){
             document.getElementById('win-text').textContent=`The answer was ${answer.n}! You got it in ${guesses.filter(g=>g).length} guess${guesses.filter(g=>g).length>1?'es':''}!`;
             document.getElementById('share-btn').style.display='inline-block';
+            showWikiForAnimal(answer, "🎉 You found it!");
           }else{
             document.getElementById('win-msg').querySelector('h3').textContent='😔 Game Over';
             document.getElementById('win-msg').querySelector('h3').style.color='var(--red)';
             document.getElementById('win-text').textContent=`The answer was ${answer.n}.`;
             document.getElementById('share-btn').style.display='inline-block';
+            showWikiForAnimal(answer, "The mystery animal was " + answer.n + ".");
           }
         }
         renderTree();
@@ -699,7 +701,7 @@ function submitGuess(){
     document.getElementById('guess-btn').disabled=true;
     document.getElementById('share-btn').style.display='inline-block';
     saveDailyState();
-    showWikiForAnimal(answer,true);
+    showWikiForAnimal(answer, "🎉 You found it!");
   }else{
     showWikiForClade(lca.clade,animal.n);
   }
@@ -713,6 +715,7 @@ function submitGuess(){
     document.getElementById('guess-btn').disabled=true;
     document.getElementById('share-btn').style.display='inline-block';
     saveDailyState();
+    showWikiForAnimal(answer, "The mystery animal was " + answer.n + ".");
   }
   renderTree();
 }
@@ -788,7 +791,7 @@ async function showWikiForClade(clade,guessName){
     wp.innerHTML=html;
   }
 }
-async function showWikiForAnimal(animal,isAnswer){
+async function showWikiForAnimal(animal, subMsg){
   const wp=document.getElementById('wiki-panel');
   const searchTerm=animal.s||animal.n;
   wp.innerHTML='<div class="wiki-card"><h2>'+animal.n+'</h2><p style="color:var(--text3)">Loading...</p></div>';
@@ -798,7 +801,7 @@ async function showWikiForAnimal(animal,isAnswer){
     const d=await r.json();
     let html='<div class="wiki-card">';
     html+=`<h2>${animal.n} <span style="color:var(--text3);font-weight:400;font-size:0.85rem">(${animal.s})</span></h2>`;
-    if(isAnswer) html+=`<div class="wiki-sub">🎉 You found it!</div>`;
+    if(subMsg) html+=`<div class="wiki-sub">${subMsg}</div>`;
     if(d.thumbnail)html+=`<img src="${d.thumbnail.source}" alt="${animal.n}">`;
     html+=`<p>${d.extract||''}</p>`;
     html+=`<a href="${d.content_urls?.desktop?.page||'#'}" target="_blank">📖 Read more on Wikipedia</a>`;
@@ -807,7 +810,7 @@ async function showWikiForAnimal(animal,isAnswer){
     html+='</div>';
     wp.innerHTML=html;
   }catch(e){
-    wp.innerHTML=`<div class="wiki-card"><h2>${animal.n}</h2><div class="wiki-sub">(${animal.s})</div>${isAnswer?'<p>🎉 Correct!</p>':''}${getCommonAnimalsHtml(animal.t[animal.t.length-1])}</div>`;
+    wp.innerHTML=`<div class="wiki-card"><h2>${animal.n}</h2><div class="wiki-sub">(${animal.s})</div>${subMsg?'<p class="wiki-sub">'+subMsg+'</p>':''}${getCommonAnimalsHtml(animal.t[animal.t.length-1])}</div>`;
   }
 }
 function showToast(msg){
@@ -980,7 +983,10 @@ function drawNodes(svg, node, parent) {
     g.style.cursor = 'pointer';
     const triggerClick = () => {
       if(node.isAnimal&&node.animalData){
-        showWikiForAnimal(node.animalData, node.isAnswer);
+        let msg = null;
+        if(node.isAnswer && gameOver) msg = (node.animalData.n === answer.n) ? "🎉 You found it!" : "The mystery animal was " + answer.n + ".";
+        else if(node.isAnswer && !gameOver) return;
+        showWikiForAnimal(node.animalData, msg);
       }else{
         showWikiForClade(node.name,null);
       }
@@ -1029,45 +1035,56 @@ function renderTree() {
   layoutNode(trie, svgW/2, 40, svgW-60);
   rootPos = {x: trie.x, y: trie.y};
   
-  // Set SVG viewBox so content fills the element
   const svgEl = document.getElementById('tree-svg');
-  svgEl.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
-  
-  // Draw all edges first, then nodes on top
   const cont = document.getElementById('tree-container');
-  
-  // On mobile, dynamically size the container based on tree depth
-  if(isMobile){
-    const baseVh = 25;
-    const perLevelVh = 6;
-    const targetVh = Math.min(55, baseVh + md * perLevelVh);
-    cont.style.height = targetVh + 'vh';
-  }
   
   drawEdges(layer, trie, null);
   drawNodes(layer, trie, null);
   
-  // Setup panzoom auto-zoom
-  const cw = cont.clientWidth;
-  const ch = cont.clientHeight;
+  const cw = cont.clientWidth || window.innerWidth;
   
-  // Scale to fit inside the container with padding
-  const fitScale = Math.min(cw/svgW, ch/svgH);
-  const scale = isMobile ? fitScale * 0.85 : Math.min(fitScale * 0.95, 1.2);
-  const tx = (cw - svgW*scale) / 2;
-  const ty = isMobile ? Math.max(10, (ch - svgH*scale) / 2) : Math.max(20, ch*0.05);
-  
-  if (window.pz) window.pz.dispose();
-  
-  layer.style.transformOrigin = "0 0";
-  layer.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${tx}, ${ty})`;
-  
-  window.pz = panzoom(layer, {
-      maxZoom: 5,
-      minZoom: 0.05,
-      bounds: true,
-      boundsPadding: 0.1
-  });
+  if(isMobile) {
+    const scale = 0.85;
+    const fw = svgW * scale;
+    const fh = svgH * scale;
+    
+    svgEl.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+    svgEl.style.width = fw + 'px';
+    svgEl.style.height = fh + 'px';
+    
+    cont.style.height = (fh + 40) + 'px'; 
+    cont.style.overflowX = 'auto';
+    cont.style.overflowY = 'hidden';
+    cont.style.touchAction = 'auto';
+    
+    cont.scrollLeft = (fw - cw) / 2;
+    
+    layer.style.transform = ""; 
+    if(window.pz){ window.pz.dispose(); window.pz = null; }
+  } else {
+    svgEl.removeAttribute('viewBox');
+    svgEl.style.width = '100%';
+    svgEl.style.height = '100%';
+    cont.style.height = ''; 
+    cont.style.overflow = 'hidden';
+    cont.style.touchAction = 'none';
+    
+    const ch = cont.clientHeight;
+    const fitScale = Math.min(cw/svgW, ch/svgH);
+    const scale = Math.min(fitScale * 0.95, 1.2);
+    const tx = (cw - svgW*scale) / 2;
+    const ty = Math.max(20, (ch - svgH*scale) / 2);
+    
+    if (window.pz) window.pz.dispose();
+    layer.style.transformOrigin = "0 0";
+    layer.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${tx}, ${ty})`;
+    window.pz = panzoom(layer, {
+        maxZoom: 5,
+        minZoom: 0.05,
+        bounds: true,
+        boundsPadding: 0.1
+    });
+  }
 }
 
 // ============ AUTOCOMPLETE ============
