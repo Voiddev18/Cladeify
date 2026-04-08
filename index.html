@@ -1671,9 +1671,8 @@
     function getCommonAnimalsHtml(clade) {
       // Find animals from the database whose taxonomy includes this clade
       const matches = ANIMALS.filter(a => a.t.includes(clade));
-      // Shuffle and pick up to 12, exclude the answer to avoid spoilers
-      const filtered = matches.filter(a => !answer || a.n !== answer.n);
-      const shuffled = filtered.sort(() => Math.random() - 0.5).slice(0, 12);
+      // Shuffle and pick up to 12
+      const shuffled = matches.sort(() => Math.random() - 0.5).slice(0, 12);
       if (shuffled.length === 0) return '';
       let html = '<div class="common-animals">';
       html += `<h3>🐾 Common Animals in ${clade}</h3><ul>`;
