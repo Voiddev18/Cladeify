@@ -58,9 +58,9 @@ main{display:flex;flex:1;overflow:hidden}
   border-radius:8px;cursor:pointer;font-size:0.78rem;font-family:inherit;font-weight:700;transition:all .2s;display:none}
 .share-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(94,176,249,0.3)}
 #win-msg{display:none;margin-top:12px;padding:12px;border-radius:var(--radius);
-  background:linear-gradient(135deg,rgba(152,195,121,0.15),rgba(152,195,121,0.05));
-  border:1px solid rgba(152,195,121,0.3);text-align:center}
-#win-msg h3{color:var(--green);font-size:1.1rem;margin-bottom:4px}
+  background:linear-gradient(135deg,rgba(94,176,249,0.15),rgba(94,176,249,0.05));
+  border:1px solid rgba(94,176,249,0.3);text-align:center}
+#win-msg h3{color:var(--accent);font-size:1.1rem;margin-bottom:4px}
 #win-msg p{color:var(--text2);font-size:0.85rem}
 
 /* WIKI PANEL */
@@ -98,9 +98,9 @@ main{display:flex;flex:1;overflow:hidden}
 .guess-tag:hover{filter:brightness(1.2)}
 
 /* TREE */
-#tree-container{flex:1;overflow:hidden;touch-action:none;position:relative;background-color:var(--bg);order:2}
-#tree-container::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,var(--bg2) 0%,var(--bg) 100%);z-index:-2}
-#tree-container::after{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;background-position:-1px -1px;opacity:0.4;z-index:-1}
+#tree-container{flex:1;overflow:hidden;touch-action:none;position:relative;background-color:#1c1e23;order:2}
+#tree-container::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,#2b303a 0%,#15171c 100%);z-index:-2}
+#tree-container::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.05) 1px,transparent 1px);background-size:20px 20px;z-index:-1}
 #tree-svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35))}
 .tree-node{cursor:pointer;transition:all .3s}
 .tree-node:hover{filter:brightness(1.2) drop-shadow(0 0 8px rgba(94,176,249,0.25))}
@@ -144,6 +144,7 @@ main{display:flex;flex:1;overflow:hidden}
 }
 </style>
   <script src="https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -680,6 +681,7 @@ function loadDailyGame(){
             document.getElementById('win-text').textContent=`The answer was ${answer.n}! You got it in ${guesses.filter(g=>g).length} guess${guesses.filter(g=>g).length>1?'es':''}!`;
             document.getElementById('share-btn').style.display='inline-block';
             showWikiForAnimal(answer, "🎉 You found it!");
+            if(window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
           }else{
             document.getElementById('win-msg').querySelector('h3').textContent='😔 Game Over';
             document.getElementById('win-msg').querySelector('h3').style.color='var(--red)';
@@ -739,6 +741,17 @@ function submitGuess(){
   // Check win
   if(animal.n===answer.n){
     gameOver=true;
+    
+    let lastWin = localStorage.getItem('cladeify_last_win');
+    let streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
+    if (lastWin == puzzleDay - 1) { streak++; } 
+    else if (lastWin != puzzleDay) { streak = 1; }
+    localStorage.setItem('cladeify_last_win', puzzleDay);
+    localStorage.setItem('cladeify_streak', streak);
+
+    if(window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
+
+
     document.getElementById('win-msg').style.display='block';
     document.getElementById('win-text').textContent=`The answer was ${answer.n}! You got it in ${guesses.length} guess${guesses.length>1?'es':''}!`;
     document.getElementById('guess-input').disabled=true;
@@ -768,8 +781,10 @@ function shareResults(){
   const dayLabel=Math.max(puzzleDay+1,1);
   const won=guesses.some(g=>g&&g.n===answer.n);
   const realGuesses=guesses.filter(g=>g!==null);
+  const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
+  
   let text=`🧬 Cladeify Daily #${dayLabel}\n`;
-  text+=won?`Guessed in ${realGuesses.length}/${maxGuesses}!\n`:`X/${maxGuesses}\n`;
+  text+=won?`Guessed in ${realGuesses.length}/${maxGuesses}! `+(streak > 0 ? `🔥 Streak: ${streak}\n` : `\n`) : `X/${maxGuesses}\n`;
   text+='\n';
   // Build emoji grid based on guess closeness
   for(const g of realGuesses){
@@ -935,7 +950,7 @@ function layoutNode(node,x,y,w){
 
 function getNodeColor(node){
   if(node.isAnswer&&!gameOver) return ANSWER_COLOR;
-  if(node.isAnswer&&gameOver) return '#2E7D32';
+  if(node.isAnswer&&gameOver) return 'var(--accent)';
   return getColor(node.lcaWithAnswer, answer.t.length-1);
 }
 
@@ -943,12 +958,13 @@ function drawEdges(svg, node, parent) {
   if (parent) {
     const parentId = parent.isAnimal ? "A-"+parent.name : "C-"+parent.name;
     const nodeId = node.isAnimal ? "A-"+node.name : "C-"+node.name;
+    const parentCol = getNodeColor(parent);
     const col = getNodeColor(node);
 
     const oldParent = oldPositions[parentId] || rootPos;
     const oldNode = oldPositions[nodeId] || rootPos;
     
-    // Create bezier curves to look like natural wood branches
+    // Create bezier curves
     const my = parent.y + Math.max(30, (node.y - parent.y)/2);
     const newD = `M${parent.x},${parent.y+16} C${parent.x},${my} ${node.x},${my} ${node.x},${node.y-16}`;
 
@@ -957,20 +973,44 @@ function drawEdges(svg, node, parent) {
 
     const pathGrp = document.createElementNS('http://www.w3.org/2000/svg','g');
     
-    // Thick wood branch
+    // Gradient definitions
+    let defs = svg.querySelector('defs');
+    if (!defs) { defs = document.createElementNS('http://www.w3.org/2000/svg','defs'); svg.insertBefore(defs, svg.firstChild); }
+    
+    const gradId = `grad_${parentId}_${nodeId}`.replace(/[^a-zA-Z0-9_\-]/g,'');
+    let grad = defs.querySelector(`#${gradId}`);
+    if (!grad) {
+      grad = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+      grad.setAttribute('id', gradId);
+      grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+      const stop1 = document.createElementNS('http://www.w3.org/2000/svg','stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('stop-color', parentCol);
+      const stop2 = document.createElementNS('http://www.w3.org/2000/svg','stop');
+      stop2.setAttribute('offset', '100%');
+      stop2.setAttribute('stop-color', col);
+      grad.appendChild(stop1);
+      grad.appendChild(stop2);
+      defs.appendChild(grad);
+    }
+    // Update vector bounds
+    grad.setAttribute('x1', parent.x);
+    grad.setAttribute('y1', parent.y+16);
+    grad.setAttribute('x2', node.x);
+    grad.setAttribute('y2', node.y-16);
+    
     const branch = document.createElementNS('http://www.w3.org/2000/svg','path');
     branch.setAttribute('fill', 'none');
-    branch.setAttribute('stroke', col); 
+    branch.setAttribute('stroke', `url(#${gradId})`); 
     branch.setAttribute('stroke-width', '4');
     branch.setAttribute('stroke-linecap', 'round');
     branch.animate([{d:`path('${oldD}')`}, {d:`path('${newD}')`}], {duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards'});
     
-    // Thin vine wrapping around it overlay
     const vine = document.createElementNS('http://www.w3.org/2000/svg','path');
     vine.setAttribute('fill', 'none');
-    vine.setAttribute('stroke', 'rgba(255,255,255,0.4)');
+    vine.setAttribute('stroke', 'rgba(255,255,255,0.2)');
     vine.setAttribute('stroke-width', '1.5');
-    vine.setAttribute('stroke-dasharray', '8 12');
+    vine.setAttribute('stroke-dasharray', '6 14');
     vine.animate([{d:`path('${oldD}')`}, {d:`path('${newD}')`}], {duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards'});
 
     pathGrp.appendChild(branch);
@@ -997,26 +1037,47 @@ function drawNodes(svg, node, parent) {
   ], { duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards' });
 
   const label = node.isAnimal ? (node.isAnswer && !gameOver ? '???' : node.name) : node.name;
-  const tw = Math.max(label.length*8+24, 60);
+  const tw = Math.max(label.length*8+28, 70);
   
   const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
   rect.setAttribute('x', -tw/2); rect.setAttribute('y', -16);
   rect.setAttribute('width', tw); rect.setAttribute('height', 32);
-  rect.setAttribute('rx', 8); rect.setAttribute('ry', 8);
   
   if(node.isAnimal){
-    rect.setAttribute('fill','rgba(20,31,23,0.9)');
-    rect.setAttribute('stroke',col);
-    rect.setAttribute('stroke-width','2');
-    if(node.isAnswer&&gameOver) rect.setAttribute('fill',col);
+    // Solid dark blocker core
+    const bgRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    bgRect.setAttribute('x', -tw/2); bgRect.setAttribute('y', -16);
+    bgRect.setAttribute('width', tw); bgRect.setAttribute('height', 32);
+    bgRect.setAttribute('rx', 16); bgRect.setAttribute('ry', 16);
+    bgRect.setAttribute('fill', '#0E1116'); 
+    g.appendChild(bgRect);
+
+    // Colored tint overlay with neon edges
+    rect.setAttribute('rx', 16); rect.setAttribute('ry', 16);
+    rect.setAttribute('fill', col);
+    rect.setAttribute('fill-opacity', '0.18'); // Internal glowing tint based on distance
+    rect.setAttribute('stroke', col);
+    rect.setAttribute('stroke-width', '2');
+    rect.style.filter = `drop-shadow(0 0 5px ${col})`; // Outer neon glow
+
+    if(node.isAnswer&&gameOver) {
+      rect.setAttribute('fill', col);
+      rect.setAttribute('fill-opacity', '0.6');
+      rect.setAttribute('stroke', '#fff'); // White highlight on win
+      rect.setAttribute('stroke-width', '3'); // Thicker border
+      rect.style.filter = `drop-shadow(0 0 6px ${col})`; // Softer outer glow to prevent SVG bounding box clipping
+    }
+    g.appendChild(rect);
   }else{
-    rect.setAttribute('fill',col);
-    rect.setAttribute('stroke',col);
+    rect.setAttribute('rx', 16); rect.setAttribute('ry', 16);
+    rect.setAttribute('fill', col);
+    rect.setAttribute('stroke', col);
+    g.appendChild(rect);
   }
-  g.appendChild(rect);
   
   const text = document.createElementNS('http://www.w3.org/2000/svg','text');
-  text.setAttribute('x', 0); text.setAttribute('y', 1);
+  text.setAttribute('x', 0); 
+  text.setAttribute('y', 1);
   text.textContent = label;
   text.setAttribute('text-anchor', 'middle');
   text.setAttribute('dominant-baseline', 'middle');
@@ -1024,9 +1085,9 @@ function drawNodes(svg, node, parent) {
   text.setAttribute('letter-spacing', '0.2px');
   
   if(node.isAnimal){
-    text.setAttribute('fill', node.isAnswer&&gameOver ? '#fff' : col);
+    text.setAttribute('fill', node.isAnswer&&gameOver ? '#fff' : 'var(--text)');
     text.setAttribute('font-weight', '700');
-    text.setAttribute('font-size', '14px');
+    text.setAttribute('font-size', '13px');
   }else{
     text.setAttribute('fill', '#fff');
     text.setAttribute('font-weight', '800');
@@ -1111,13 +1172,15 @@ function renderTree() {
     svgEl.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
     svgEl.style.width = fw + 'px';
     svgEl.style.height = fh + 'px';
+    svgEl.style.margin = '0 auto';
+    svgEl.style.display = 'block';
     
     cont.style.height = (fh + 40) + 'px'; 
     cont.style.overflowX = 'auto';
     cont.style.overflowY = 'hidden';
     cont.style.touchAction = 'auto';
     
-    cont.scrollLeft = (fw - cw) / 2;
+    cont.scrollLeft = Math.max(0, (fw - cw) / 2);
     
     layer.style.transform = ""; 
     if(window.pz){ window.pz.dispose(); window.pz = null; }
