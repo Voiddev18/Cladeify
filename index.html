@@ -1453,11 +1453,32 @@
                 document.getElementById('share-btn').style.display = 'inline-block';
                 showWikiForAnimal(answer, "🎉 You found it!");
                 if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
-                // Show win banner with current stats
-                const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
-                const maxStreak = parseInt(localStorage.getItem('cladeify_max_streak')) || 0;
-                const plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
-                const wins = parseInt(localStorage.getItem('cladeify_wins')) || 0;
+                // Check if we need to record this win in our stats (if not already recorded today)
+                let lastWin = localStorage.getItem('cladeify_last_win');
+                let streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
+                let maxStreak = parseInt(localStorage.getItem('cladeify_max_streak')) || 0;
+                let plays = parseInt(localStorage.getItem('cladeify_plays')) || 0;
+                let wins = parseInt(localStorage.getItem('cladeify_wins')) || 0;
+
+                if (lastWin != puzzleDay) {
+                  plays++;
+                  wins++;
+                  // Re-calculate streak based on last win
+                  if (lastWin == puzzleDay - 1) { streak++; } else { streak = 1; }
+                  if (streak > maxStreak) maxStreak = streak;
+                  localStorage.setItem('cladeify_last_win', puzzleDay);
+                  localStorage.setItem('cladeify_streak', streak);
+                  localStorage.setItem('cladeify_max_streak', maxStreak);
+                  localStorage.setItem('cladeify_plays', plays);
+                  localStorage.setItem('cladeify_wins', wins);
+                }
+                
+                // Final safety check: Max streak should never be less than current streak
+                if (streak > maxStreak) {
+                  maxStreak = streak;
+                  localStorage.setItem('cladeify_max_streak', maxStreak);
+                }
+
                 document.getElementById('banner-subtitle').textContent = `You found the ${answer.n} in ${numGuesses} guess${numGuesses > 1 ? 'es' : ''}!`;
                 document.getElementById('banner-plays').textContent = plays;
                 document.getElementById('banner-wins').textContent = wins;
