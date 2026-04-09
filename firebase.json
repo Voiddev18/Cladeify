@@ -1,0 +1,30 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Cladeify",
+        "supportEmail": "voiddev18@gmail.com",
+        "authorizedRedirectUris": [
+          "http://localhost:8765",
+          "https://cladeify.firebaseapp.com",
+          "https://cladeify.web.app",
+          "https://voiddev18.github.io"
+        ]
+      }
+    }
+  }
+}
