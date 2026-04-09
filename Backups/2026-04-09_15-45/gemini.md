@@ -1,0 +1,141 @@
+# Cladeify — Project Context
+
+## What is Cladeify?
+Cladeify is a daily, interactive phylogenetic guessing game. Players identify a mystery animal by typing guesses and navigating an unfolding taxonomic tree. Think "Wordle meets taxonomy."
+
+**Live URL:** Hosted via GitHub Pages at `https://voiddev18.github.io/Cladeify/`
+**Repository:** `Voiddev18/Cladeify`
+
+---
+
+## Technology & Architecture
+
+- **Single-File Build:** All styles, DOM, and JS live in one monolithic `index.html` (vanilla HTML/CSS/JS, no frameworks).
+- **Tree Visualization:** SVG canvas overlay dynamically constructed via JS (`layoutNode()`) with vertical stagger calculations for mobile.
+- **Wikipedia API:** Async fetch to Wikipedia REST API for clade/animal knowledge panels.
+- **Theme:** "Scientific Journal Dark Mode" — charcoal backgrounds, cyan accents, 1px paper-graph patterns.
+
+### File Structure
+| File | Purpose |
+|------|---------|
+| `index.html` | Production game (currently the older version before leaderboard) |
+| `test.html` | Development/staging version with the full leaderboard system |
+| `firestore.rules` | Firestore security rules for the leaderboard collection |
+| `firestore.indexes.json` | Firestore composite indexes |
+| `firebase.json` | Firebase project config (hosting, auth, firestore) |
+| `.firebaserc` | Firebase project alias (`cladeify`) |
+| `404.html` | Custom 404 page |
+| `Backups/` | Backup copies of index.html |
+
+---
+
+## Firebase / Firestore Setup
+
+### Project
+- **Project ID:** `cladeify`
+- **Auth Support Email:** `voiddev18@gmail.com`
+- **Firestore Location:** `nam5`
+- **Hosting:** Firebase Hosting + GitHub Pages
+
+### Authentication
+- **Google Sign-In** is available but **optional**.
+- Authorized redirect URIs: `localhost:8765`, `cladeify.firebaseapp.com`, `cladeify.web.app`, `voiddev18.github.io`
+
+### Firestore Collection: `leaderboard`
+Each document represents one player. Document ID is either:
+- The user's Firebase Auth `uid` (if signed in with Google)
+- A client-generated `localId` (format: `local_<timestamp36><random>`) stored in `localStorage`
+
+#### Document Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| `uid` | string | Firebase Auth UID (auth'd users only) |
+| `localId` | string | Client-generated persistent ID (anon users only) |
+| `name` | string | Display name (1-20 chars) |
+| `nameLower` | string | Lowercased name for uniqueness checks |
+| `photoURL` | string | Google profile photo URL |
+| `plays` | number | Total games played |
+| `wins` | number | Total wins |
+| `winRate` | number | Win percentage (0-100) |
+| `streak` | number | Current win streak |
+| `maxStreak` | number | Best win streak ever |
+| `todayGuesses` | number | Guesses used today |
+| `todayWon` | boolean | Whether today's puzzle was won |
+| `todayDay` | number | Puzzle day number |
+| `updatedAt` | timestamp | Server timestamp of last update |
+
+### Firestore Security Rules
+```
+read: anyone (public)
+write (auth'd): request.auth.uid == docId
+create/update (anon): localId == docId, name 1-20 chars, nameLower validated
+delete (anon): resource.data.localId == docId
+```
+**Deploy command:** `npx firebase-tools deploy --only firestore:rules --project cladeify`
+
+---
+
+## Leaderboard System
+
+### Dual-Identity Model
+- **Authenticated users** use their Google `uid` as the document ID.
+- **Anonymous users** get a persistent `localId` stored in `localStorage` (`cladeify_local_uid`).
+- Both can set a custom display name stored in `localStorage` (`cladeify_lb_username`).
+
+### Name Validation
+1. **Length:** 1-20 characters.
+2. **Uniqueness:** Checked via Firestore query on both `nameLower` and `name` fields. Case-insensitive.
+3. **Content Filter:** A client-side `BANNED_WORDS` list blocks ethnic slurs and hateful terms. Mild profanity is intentionally allowed. The filter strips spaces, underscores, hyphens, and dots before checking substrings.
+
+### Leaderboard Tabs
+- **Today:** Sorted by today's guesses (ascending, winners first).
+- **All Time:** Sorted by wins (descending).
+- **Streaks:** Sorted by best streak (descending), then current streak.
+
+### Settings Panel (collapsible ⚙️)
+- Display name input + Submit/Save button.
+- Google Sign-In button (optional, shown to anonymous users).
+- **Remove from leaderboard:** User must type their exact username to confirm deletion. Deletes the Firestore document and clears `cladeify_lb_username` from localStorage.
+
+### Auto-Sync
+When a game ends (`saveDailyState`), stats automatically push to the cloud for:
+- Authenticated users (always).
+- Anonymous users who have previously submitted a name.
+
+### "(you)" Detection
+The leaderboard highlights the current user's row using a triple-check: `e.uid === myUid || e.id === myUid || e.localId === myUid`.
+
+---
+
+## Core Game Mechanics
+
+1. **LCA & Color Distances:** Engine finds the Lowest Common Ancestor between guess taxonomy and answer taxonomy.
+2. **Color Legend:**
+   - 🟥 **Red:** Very distant (diverged early).
+   - 🟨 **Yellow:** Getting closer (Class/Order level match).
+   - 🟩 **Green:** Very close (Family/Genus level match).
+   - 🟦 **Blue:** Direct hit (answer found).
+3. **Daily PRNG:** Seeded RNG tied to current date — same animal for everyone worldwide on a given day.
+4. **Stats Tracking:** `localStorage` keys: `cladeify_plays`, `cladeify_wins`, `cladeify_streak`, `cladeify_max_streak`, `cladeify_daily`.
+
+---
+
+## Development Rules
+
+1. **Mobile First:** Any layout change MUST consider 320-375px widths. Tree uses vertical stagger for readability.
+2. **Test Before Push:** Never push layout changes without physical mobile device testing. Developer Tools emulation is not sufficient for final validation. Wait for explicit "push it" command.
+3. **Dependency Free:** Vanilla HTML/CSS/JS only. No external libraries (panzoom was removed). Use native elements like `<details>`, native SVG.
+4. **test.html Workflow:** New features are developed in `test.html` first, then merged into `index.html` after verification.
+5. **Local Server:** `python -m http.server 8765` from the project root for local testing.
+
+## Git Workflow
+```bash
+git add .
+git commit -m "Descriptive message"
+git push origin main
+```
+
+## Deploying Firestore Rules
+```bash
+npx firebase-tools deploy --only firestore:rules --project cladeify
+```
