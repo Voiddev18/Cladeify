@@ -18,14 +18,19 @@ Cladeify is a daily, interactive phylogenetic guessing game. Players identify a 
 ### File Structure
 | File | Purpose |
 |------|---------|
-| `index.html` | Production game (currently the older version before leaderboard) |
-| `test.html` | Development/staging version with the full leaderboard system |
-| `firestore.rules` | Firestore security rules for the leaderboard collection |
-| `firestore.indexes.json` | Firestore composite indexes |
-| `firebase.json` | Firebase project config (hosting, auth, firestore) |
-| `.firebaserc` | Firebase project alias (`cladeify`) |
-| `404.html` | Custom 404 page |
-| `Backups/` | Backup copies of index.html |
+| `index.html` | Main entry point served to users (live game). Synced with `cladeify.html`. |
+| `cladeify.html` | Core game file containing all HTML, CSS, and JS logic. |
+| `404.html` | Custom 404 error page for GitHub Pages and Firebase. |
+| `CNAME` | Custom domain configuration for GitHub Pages. |
+| `firebase.json` | Firebase configuration for Hosting and Firestore settings. |
+| `.firebaserc` | Firebase project alias configuration (`cladeify`). |
+| `firestore.rules` | Security rules for the Firestore `leaderboard` collection. |
+| `firestore.indexes.json` | Composite indexes for sorting leaderboard data. |
+| `gemini.md` | Comprehensive project documentation and AI context (this file). |
+| `cladeify_summary.md` | Condensed summary of technical features and status. |
+| `README.md` | Basic project overview for the repository landing page. |
+| `Backups/` | Directory containing timestamped historical project snapshots. |
+| `.git/` | Git version control metadata. |
 
 ---
 
