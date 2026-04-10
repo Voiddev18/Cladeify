@@ -33,9 +33,20 @@ Cladeify is a daily, interactive phylogenetic guessing game. Players identify a 
 - **Quick Rules Sidebar:** Added a "Quick Rules" banner at the top of the left sidebar for instant onboarding, including a shortcut button to the full instructions.
 - **Premium Close Buttons:** Upgraded modal close buttons from simple text characters to interactive, circular glassmorphism buttons with hover scale effects.
 
-### 4. Technical Refinements
-- **Positioning Fix:** Resolved a major layout issue where the Shop close button was floating off-screen by adding `position: relative` to the base `.modal` class.
-- **Code Consolidation:** Standardized point reward calculations into a single `calculateEarnedPoints()` helper to ensure multiplier consistency across all win scenarios.
+### 4. XP & Leveling System
+- **Scaled Progression:** Implemented a non-linear XP requirement formula: `Threshold = 100 * (Level-1)^1.5`. This ensures leveling becomes progressively harder, encouraging long-term engagement.
+
+- **Visual Feedback:** Added a level badge to the header and established a "Level Up" flow including animations and cloud-synchronized rewards.
+
+### 5. Player Stats Tab
+- **Stats Dashboard:** Added a new "Stats" modal accessible from the navigation dropdown. 
+- **Progress Tracking:** Includes a real-time XP progress bar showing current progress toward the next level, along with detailed lifetime metrics (Plays, Wins, Win Rate, Streaks, Average Guesses).
+- **UI Consistency:** Standardized all modal close buttons to the circular glassmorphism style, including a fix for the leaderboard close button.
+
+### 6. Technical Refinements
+- **Code Consolidation:** Standardized point reward calculations into a single `calculateEarnedPoints()` helper.
+- **Live Deployment:** Synchronized `cladeify.html` with `index.html` for production release.
+
 
 ---
 

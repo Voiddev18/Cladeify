@@ -753,9 +753,9 @@
       background: rgba(0, 0, 0, 0.7);
       z-index: 200;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 20px;
+      padding: 20px 10px;
       overflow-y: auto;
       animation: fadeIn .2s
     }
@@ -769,7 +769,10 @@
       max-width: 420px;
       width: 90%;
       text-align: center;
-      box-shadow: var(--shadow)
+      box-shadow: var(--shadow);
+      margin: auto;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal h2 {
@@ -864,8 +867,10 @@
       background: rgba(0, 0, 0, 0.65);
       z-index: 500;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      padding: 20px 10px;
+      overflow-y: auto;
       animation: fadeIn .3s
     }
 
@@ -883,7 +888,10 @@
       text-align: center;
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
       position: relative;
-      animation: bannerPop .35s cubic-bezier(0.34, 1.56, 0.64, 1)
+      animation: bannerPop .35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin: auto;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     @keyframes bannerPop {
@@ -1088,8 +1096,10 @@
       backdrop-filter: blur(8px);
       z-index: 900;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      padding: 20px 10px;
+      overflow-y: auto;
       animation: fadeIn 0.2s;
     }
 
@@ -1102,6 +1112,9 @@
       padding: 32px 24px;
       position: relative;
       animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin: auto;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .progress-container {
@@ -1219,8 +1232,10 @@
       background: rgba(0, 0, 0, 0.7);
       z-index: 600;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      padding: 20px 10px;
+      overflow-y: auto;
       animation: fadeIn .2s
     }
 
@@ -1241,7 +1256,8 @@
       animation: bannerPop .3s cubic-bezier(0.34, 1.56, 0.64, 1);
       display: flex;
       flex-direction: column;
-      overflow: hidden
+      overflow: hidden;
+      margin: auto;
     }
 
     #lb-modal .lb-header {
@@ -1340,10 +1356,11 @@
       background: rgba(0, 0, 0, 0.75);
       z-index: 600;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      padding: 20px 10px;
+      overflow-y: auto;
       animation: fadeIn .2s;
-      padding: 20px;
     }
     #htp-overlay.show { display: flex; }
     #htp-modal {
@@ -1358,6 +1375,7 @@
       box-shadow: 0 32px 80px rgba(0,0,0,0.6);
       position: relative;
       animation: bannerPop .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin: auto;
     }
     #htp-modal h2 {
       margin-top: 0;
@@ -2948,11 +2966,12 @@
     let userPoints = parseInt(localStorage.getItem('cladeify_points')) || 0;
     let userXP = parseInt(localStorage.getItem('cladeify_xp')) || 0;
 
-    // SCALED XP LOGIC: Threshold for Level L is 100 * (L-1)^1.8
+    // SCALED XP LOGIC: Threshold for Level L is 100 * (L-1)^1.5
     function getXPForLevel(lvl) {
       if (lvl <= 1) return 0;
-      return Math.floor(100 * Math.pow(lvl - 1, 1.8));
+      return Math.floor(100 * Math.pow(lvl - 1, 1.5));
     }
+
 
     function calculateLevel(xp) {
       let lvl = 1;
@@ -4527,16 +4546,6 @@
       }
       html += `</div>`; // close settings panel
 
-      // My stats card (always shows)
-      html += `<div class="lb-my-stats">
-        <div class="ms"><div class="mv">${stats.plays}</div><div class="ml">Plays</div></div>
-        <div class="ms"><div class="mv">${stats.wins}</div><div class="ml">Wins</div></div>
-        <div class="ms"><div class="mv">${stats.plays > 0 ? Math.round((stats.wins / stats.plays) * 100) : 0}%</div><div class="ml">Win %</div></div>
-        <div class="ms"><div class="mv">${stats.trackedWins > 0 ? (stats.totGuesses / stats.trackedWins).toFixed(1) : '-'}</div><div class="ml">Avg</div></div>
-        <div class="ms"><div class="mv">${stats.streak}</div><div class="ml">Streak</div></div>
-        <div class="ms"><div class="mv">${stats.maxStreak}</div><div class="ml">Best</div></div>
-        <div class="ms"><div class="mv">${calculateLevel(stats.xp)}</div><div class="ml">Level</div></div>
-      </div>`;
 
 
       // ALWAYS load cloud leaderboard (public read)
