@@ -1002,6 +1002,174 @@
       text-decoration: underline
     }
 
+    /* XP SYSTEM UI */
+    .level-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(94, 176, 249, 0.1);
+      border: 1px solid rgba(94, 176, 249, 0.3);
+      padding: 4px 10px;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .level-badge:hover {
+      background: rgba(94, 176, 249, 0.2);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .level-label {
+      font-size: 0.65rem;
+      color: var(--text3);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .level-val {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .xp-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text2);
+      background: var(--bg3);
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-left: 4px;
+    }
+
+    @keyframes levelUpPulse {
+      0% {
+        transform: scale(1);
+        filter: brightness(1) drop-shadow(0 0 0 var(--accent));
+      }
+
+      50% {
+        transform: scale(1.2);
+        filter: brightness(1.5) drop-shadow(0 0 15px var(--accent));
+      }
+
+      100% {
+        transform: scale(1);
+        filter: brightness(1) drop-shadow(0 0 0 var(--accent));
+      }
+    }
+
+    .level-up-anim {
+      animation: levelUpPulse 0.8s ease-in-out 3;
+    }
+
+    .xp-earned-banner {
+      background: var(--glass2);
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border: 1px dashed var(--accent);
+      margin-bottom: 12px;
+    }
+
+    /* STATS MODAL & PROGRESS BAR */
+    #stats-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s;
+    }
+
+    #stats-modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      width: 95%;
+      max-width: 420px;
+      padding: 32px 24px;
+      position: relative;
+      animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 7px;
+      overflow: hidden;
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%;
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .xp-text {
+      font-size: 0.7rem;
+      color: var(--text3);
+      margin-top: 6px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .stats-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 4px;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .stats-card .val {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+      display: block;
+      line-height: 1.1;
+    }
+
+    .stats-card .lbl {
+      font-size: 0.62rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+      font-weight: 700;
+    }
+
+
+
     #win-banner .banner-close {
       position: absolute;
       top: 12px;
@@ -1100,19 +1268,27 @@
     #lb-modal .lb-close {
       position: absolute;
       top: 14px;
-      right: 16px;
-      background: none;
-      border: none;
+      right: 14px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 50%;
       color: var(--text3);
-      font-size: 1.2rem;
+      font-size: 1rem;
       cursor: pointer;
-      padding: 4px;
-      line-height: 1;
-      z-index: 10
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
     }
 
     #lb-modal .lb-close:hover {
-      color: var(--text)
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border-color: var(--accent);
+      transform: scale(1.1);
     }
 
     /* Tab bar */
@@ -2022,7 +2198,12 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;position:relative;">
         <div id="multiplier-badge" style="color:var(--gold); font-weight:800; font-size:1.1rem; display:none; filter: drop-shadow(0 0 4px rgba(229,192,123,0.3)); letter-spacing: -0.5px;">1.15x</div>
+        <div id="level-badge" class="level-badge" title="Your Current Level">
+          <span class="level-label">LVL</span>
+          <span id="user-level" class="level-val">1</span>
+        </div>
         <div id="top-coins-display"
+
           style="display:flex; align-items:center; gap:6px; background:rgba(229, 192, 123, 0.1); border:1px solid rgba(229, 192, 123, 0.3); padding:6px 10px; border-radius:8px; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
           <span style="font-size:1rem; line-height:1;">🪙</span>
           <span id="points-display"
@@ -2045,7 +2226,12 @@
             style="width:100%; display:flex; justify-content:space-between; align-items:center; background:var(--glass2); border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:var(--radius); font-weight:700; cursor:pointer;"
             onmouseover="this.style.borderColor='var(--accent)'"
             onmouseout="this.style.borderColor='var(--border)'">Leaderboard <span>🏆</span></button>
+          <button onclick="openStats(); toggleHamburgerMenu();"
+            style="width:100%; display:flex; justify-content:space-between; align-items:center; background:var(--glass2); border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:var(--radius); font-weight:700; cursor:pointer; margin-top:4px;"
+            onmouseover="this.style.borderColor='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)'">Stats <span>📊</span></button>
           <button onclick="openHowToPlay(); toggleHamburgerMenu();"
+
             style="width:100%; display:flex; justify-content:space-between; align-items:center; background:var(--glass2); border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:var(--radius); font-weight:700; cursor:pointer; margin-top:4px;"
             onmouseover="this.style.borderColor='var(--accent)'"
             onmouseout="this.style.borderColor='var(--border)'">How to Play <span>📖</span></button>
@@ -2130,6 +2316,12 @@
           </div>
         </div>
       </div>
+      <div id="xp-earned-banner" class="xp-earned-banner">
+        <span style="font-weight:700; color:var(--accent); font-size:0.9rem;">✨ XP Gained:</span>
+        <span id="banner-xp-earned" style="font-weight:800; color:var(--text); font-size:1.1rem;">+0</span>
+        <div id="level-up-toast" style="display:none; color:var(--green); font-weight:700; font-size:0.8rem; animation:fadeIn 0.5s;">LEVEL UP! ⬆️</div>
+      </div>
+
       <div style="display:flex; justify-content:center; gap:12px; margin-bottom: 18px">
         <button class="banner-share-btn" style="margin-bottom:0px; width: auto; padding: 12px 24px;"
           onclick="openLeaderboard()"><span
@@ -2257,7 +2449,45 @@
     </div>
   </div>
 
+  <!-- STATS MODAL -->
+  <div id="stats-overlay" onclick="if(event.target===this) this.style.display='none'">
+    <div id="stats-modal" class="modal">
+      <button class="close-btn" onclick="document.getElementById('stats-overlay').style.display='none'">✕</button>
+
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="margin: 0; font-size: 1.8rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Player Stats</h2>
+        <p style="font-size: 0.8rem; color: var(--text3); margin-top: 4px;">Track your growth and achievements</p>
+      </div>
+
+      <!-- LEVEL PROGRESS SECTION -->
+      <div style="background: var(--bg3); border: 1px solid var(--border); border-radius: 18px; padding: 20px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px;">
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent); text-transform: uppercase;">Level</span>
+            <span id="stats-lvl-val" style="font-size: 2.2rem; font-weight: 900; color: var(--text); line-height: 0.9;">1</span>
+          </div>
+          <div id="stats-xp-to-next" style="font-size: 0.8rem; font-weight: 700; color: var(--text3);">0 / 100 XP</div>
+        </div>
+        <div class="progress-container">
+          <div id="stats-progress-bar" class="progress-bar"></div>
+        </div>
+        <p class="xp-text" id="stats-xp-summary">Earn XP by winning daily puzzles!</p>
+      </div>
+
+      <!-- GAME STATS GRID -->
+      <div class="stats-grid">
+        <div class="stats-card"><span class="val" id="stats-plays">0</span><span class="lbl">Plays</span></div>
+        <div class="stats-card"><span class="val" id="stats-wins">0</span><span class="lbl">Wins</span></div>
+        <div class="stats-card"><span class="val" id="stats-winrate">0%</span><span class="lbl">Win Rate</span></div>
+        <div class="stats-card"><span class="val" id="stats-streak">0</span><span class="lbl">Streak</span></div>
+        <div class="stats-card"><span class="val" id="stats-best">0</span><span class="lbl">Best</span></div>
+        <div class="stats-card"><span class="val" id="stats-avg">0</span><span class="lbl">Avg</span></div>
+      </div>
+    </div>
+  </div>
+
   <script>
+
     // ============ UI HELPERS ============
     function openHowToPlay() {
       document.getElementById('htp-overlay').classList.add('show');
@@ -2265,6 +2495,36 @@
     function closeHowToPlay() {
       document.getElementById('htp-overlay').classList.remove('show');
     }
+
+    function openStats() {
+      updateStatsModal();
+      document.getElementById('stats-overlay').style.display = 'flex';
+    }
+
+    function updateStatsModal() {
+      const stats = getMyStats();
+      const level = calculateLevel(userXP);
+      const nextXP = getXPForLevel(level + 1);
+      const currentXPThreshold = getXPForLevel(level);
+      const xpInCurrentLvl = userXP - currentXPThreshold;
+      const xpNeededForNext = nextXP - currentXPThreshold;
+      const progressPercent = Math.min(100, Math.max(0, (xpInCurrentLvl / xpNeededForNext) * 100));
+
+      document.getElementById('stats-lvl-val').textContent = level;
+      document.getElementById('stats-xp-to-next').textContent = `${userXP} / ${nextXP} XP`;
+      document.getElementById('stats-progress-bar').style.width = `${progressPercent}%`;
+
+      const remaining = nextXP - userXP;
+      document.getElementById('stats-xp-summary').textContent = `Just ${remaining} XP until Level ${level + 1}!`;
+
+      document.getElementById('stats-plays').textContent = stats.plays;
+      document.getElementById('stats-wins').textContent = stats.wins;
+      document.getElementById('stats-winrate').textContent = (stats.plays > 0 ? Math.round((stats.wins / stats.plays) * 100) : 0) + '%';
+      document.getElementById('stats-streak').textContent = stats.streak;
+      document.getElementById('stats-best').textContent = stats.maxStreak;
+      document.getElementById('stats-avg').textContent = stats.trackedWins > 0 ? (stats.totGuesses / stats.trackedWins).toFixed(1) : '-';
+    }
+
     // ============ NAV MENU ============
     function toggleHamburgerMenu() {
       const drop = document.getElementById('nav-dropdown');
@@ -2686,12 +2946,56 @@
     // ============ GAME STATE ============
     let answer = null, guesses = [], maxGuesses = 20, gameOver = false, puzzleDay = 0;
     let userPoints = parseInt(localStorage.getItem('cladeify_points')) || 0;
+    let userXP = parseInt(localStorage.getItem('cladeify_xp')) || 0;
+
+    // SCALED XP LOGIC: Threshold for Level L is 100 * (L-1)^1.8
+    function getXPForLevel(lvl) {
+      if (lvl <= 1) return 0;
+      return Math.floor(100 * Math.pow(lvl - 1, 1.8));
+    }
+
+    function calculateLevel(xp) {
+      let lvl = 1;
+      while (xp >= getXPForLevel(lvl + 1)) {
+        lvl++;
+      }
+      return lvl;
+    }
 
     function updatePointsDisplay() {
       const display = document.getElementById('points-display');
       if (display) display.textContent = userPoints;
       const shopDisp = document.getElementById('shop-points-display');
       if (shopDisp) shopDisp.textContent = userPoints;
+
+      // Update Level Display
+      const lvlVal = document.getElementById('user-level');
+      if (lvlVal) {
+        const currentLvl = calculateLevel(userXP);
+        const displayedLvl = parseInt(lvlVal.textContent) || 0;
+        
+        // Initial load check
+        if (displayedLvl === 0) {
+          lvlVal.textContent = currentLvl;
+        } else if (displayedLvl < currentLvl) {
+          // Level up animation
+          const badge = document.getElementById('level-badge');
+          if (badge) {
+            badge.classList.add('level-up-anim');
+            setTimeout(() => badge.classList.remove('level-up-anim'), 3000);
+          }
+          showToast(`🚀 Level Up! You are now Level ${currentLvl}!`);
+          const bannerLvlUp = document.getElementById('level-up-toast');
+          if (bannerLvlUp) bannerLvlUp.style.display = 'block';
+          lvlVal.textContent = currentLvl;
+        }
+      }
+
+      // Update Stats Modal if open
+      if (document.getElementById('stats-overlay')?.style.display === 'flex') {
+        updateStatsModal();
+      }
+
 
       const badge = document.getElementById('multiplier-badge');
       if (badge) {
@@ -2706,6 +3010,14 @@
       if (d === 6 || d === 0) return Math.round(base * 1.15);
       return base;
     }
+
+    function calculateEarnedXP(numGuesses, won) {
+      if (!won) return 0;
+      const baseXP = 100;
+      const bonusXP = Math.max(0, (maxGuesses - numGuesses) * 20);
+      return baseXP + bonusXP;
+    }
+
 
     // ============ GAME LOGIC ============
     function findAnimal(name) { return ANIMALS.find(a => a.n.toLowerCase() === name.toLowerCase()) }
@@ -2802,22 +3114,26 @@
                   localStorage.setItem('cladeify_wins', wins);
                   localStorage.setItem('cladeify_tot_guesses', totGuesses);
                   localStorage.setItem('cladeify_tracked_wins', trackedWins);
-
+ 
                   const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
+                  const earnedXP = calculateEarnedXP(numGuesses, true);
                   userPoints += earned;
+                  userXP += earnedXP;
                   localStorage.setItem('cladeify_points', userPoints);
+                  localStorage.setItem('cladeify_xp', userXP);
                   updatePointsDisplay();
                   syncLocalToCloud();
                   const d = new Date().getDay();
                   const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
-                  setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
+                  setTimeout(() => showToast(`Earned ${earned} points and ${earnedXP} XP!${bonusMsg}`), 500);
+                  const xpEl = document.getElementById('banner-xp-earned');
+                  if (xpEl) xpEl.textContent = `+${earnedXP}`;
 
                 } else if (lastWin != puzzleDay) {
                   plays++;
                   wins++;
                   totGuesses += numGuesses;
                   trackedWins++;
-                  // Re-calculate streak based on last win
                   if (lastWin == puzzleDay - 1) { streak++; } else { streak = 1; }
                   if (streak > maxStreak) maxStreak = streak;
                   localStorage.setItem('cladeify_last_win', puzzleDay);
@@ -2827,15 +3143,20 @@
                   localStorage.setItem('cladeify_wins', wins);
                   localStorage.setItem('cladeify_tot_guesses', totGuesses);
                   localStorage.setItem('cladeify_tracked_wins', trackedWins);
-
+ 
                   const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
+                  const earnedXP = calculateEarnedXP(numGuesses, true);
                   userPoints += earned;
+                  userXP += earnedXP;
                   localStorage.setItem('cladeify_points', userPoints);
+                  localStorage.setItem('cladeify_xp', userXP);
                   updatePointsDisplay();
                   syncLocalToCloud();
                   const d = new Date().getDay();
                   const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
-                  setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
+                  setTimeout(() => showToast(`Earned ${earned} points and ${earnedXP} XP!${bonusMsg}`), 500);
+                  const xpEl = document.getElementById('banner-xp-earned');
+                  if (xpEl) xpEl.textContent = `+${earnedXP}`;
                 }
 
                 // Final safety check: Max streak should never be less than current streak
@@ -2932,15 +3253,20 @@
           localStorage.setItem('cladeify_wins', wins);
           localStorage.setItem('cladeify_tot_guesses', totGuesses);
           localStorage.setItem('cladeify_tracked_wins', trackedWins);
-
+ 
           const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
+          const earnedXP = calculateEarnedXP(numGuesses, true);
           userPoints += earned;
+          userXP += earnedXP;
           localStorage.setItem('cladeify_points', userPoints);
+          localStorage.setItem('cladeify_xp', userXP);
           updatePointsDisplay();
           syncLocalToCloud();
           const d = new Date().getDay();
           const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
-          setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
+          setTimeout(() => showToast(`Earned ${earned} points and ${earnedXP} XP!${bonusMsg}`), 500);
+          const xpEl = document.getElementById('banner-xp-earned');
+          if (xpEl) xpEl.textContent = `+${earnedXP}`;
 
         } else if (lastWin != puzzleDay) {
           plays++;
@@ -2956,38 +3282,20 @@
           localStorage.setItem('cladeify_wins', wins);
           localStorage.setItem('cladeify_tot_guesses', totGuesses);
           localStorage.setItem('cladeify_tracked_wins', trackedWins);
-
+ 
           const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
+          const earnedXP = calculateEarnedXP(numGuesses, true);
           userPoints += earned;
+          userXP += earnedXP;
           localStorage.setItem('cladeify_points', userPoints);
+          localStorage.setItem('cladeify_xp', userXP);
           updatePointsDisplay();
           syncLocalToCloud();
           const d = new Date().getDay();
           const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
-          setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
-        } else if (lastWin != puzzleDay) {
-          plays++;
-          wins++;
-          totGuesses += numGuesses;
-          trackedWins++;
-          if (lastWin == puzzleDay - 1) { streak++; } else { streak = 1; }
-          if (streak > maxStreak) maxStreak = streak;
-          localStorage.setItem('cladeify_last_win', puzzleDay);
-          localStorage.setItem('cladeify_streak', streak);
-          localStorage.setItem('cladeify_max_streak', maxStreak);
-          localStorage.setItem('cladeify_plays', plays);
-          localStorage.setItem('cladeify_wins', wins);
-          localStorage.setItem('cladeify_tot_guesses', totGuesses);
-          localStorage.setItem('cladeify_tracked_wins', trackedWins);
-
-          const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
-          userPoints += earned;
-          localStorage.setItem('cladeify_points', userPoints);
-          updatePointsDisplay();
-          syncLocalToCloud();
-          const d = new Date().getDay();
-          const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
-          setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
+          setTimeout(() => showToast(`Earned ${earned} points and ${earnedXP} XP!${bonusMsg}`), 500);
+          const xpEl = document.getElementById('banner-xp-earned');
+          if (xpEl) xpEl.textContent = `+${earnedXP}`;
         }
 
         if (streak > maxStreak) {
@@ -3917,9 +4225,11 @@
         streak: parseInt(localStorage.getItem('cladeify_streak')) || 0,
         maxStreak: parseInt(localStorage.getItem('cladeify_max_streak')) || 0,
         totGuesses: parseInt(localStorage.getItem('cladeify_tot_guesses')) || 0,
-        trackedWins: parseInt(localStorage.getItem('cladeify_tracked_wins')) || 0
+        trackedWins: parseInt(localStorage.getItem('cladeify_tracked_wins')) || 0,
+        xp: parseInt(localStorage.getItem('cladeify_xp')) || 0
       };
     }
+
     function getTodayResult() {
       let todayGuesses = 0, todayWon = false;
       const saved = localStorage.getItem('cladeify_daily');
@@ -3953,7 +4263,9 @@
           streak: stats.streak,
           maxStreak: stats.maxStreak,
           points: userPoints,
+          xp: userXP,
           nameColorId: activeCosmetics.nameColor,
+
           nameBorderId: activeCosmetics.nameBorder,
           winRate: stats.plays > 0 ? Math.round((stats.wins / stats.plays) * 100) : 0,
           avgGuesses: stats.trackedWins > 0 ? Number((stats.totGuesses / stats.trackedWins).toFixed(1)) : 0,
@@ -3981,7 +4293,9 @@
           streak: stats.streak,
           maxStreak: stats.maxStreak,
           points: userPoints,
+          xp: userXP,
           nameColorId: activeCosmetics.nameColor,
+
           nameBorderId: activeCosmetics.nameBorder,
           winRate: stats.plays > 0 ? Math.round((stats.wins / stats.plays) * 100) : 0,
           avgGuesses: stats.trackedWins > 0 ? Number((stats.totGuesses / stats.trackedWins).toFixed(1)) : 0,
@@ -4221,7 +4535,9 @@
         <div class="ms"><div class="mv">${stats.trackedWins > 0 ? (stats.totGuesses / stats.trackedWins).toFixed(1) : '-'}</div><div class="ml">Avg</div></div>
         <div class="ms"><div class="mv">${stats.streak}</div><div class="ml">Streak</div></div>
         <div class="ms"><div class="mv">${stats.maxStreak}</div><div class="ml">Best</div></div>
+        <div class="ms"><div class="mv">${calculateLevel(stats.xp)}</div><div class="ml">Level</div></div>
       </div>`;
+
 
       // ALWAYS load cloud leaderboard (public read)
       if (!lbCloudFetched && !lbCloudLoading) {
