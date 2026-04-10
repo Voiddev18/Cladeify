@@ -1020,6 +1020,7 @@
       padding: 6px 10px;
       border-radius: 8px;
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
     }
 
     .level-badge:hover {
@@ -2216,13 +2217,13 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;position:relative;">
         <div id="multiplier-badge" style="color:var(--gold); font-weight:800; font-size:1.1rem; display:none; filter: drop-shadow(0 0 4px rgba(229,192,123,0.3)); letter-spacing: -0.5px;">1.15x</div>
-        <div id="level-badge" class="level-badge" title="Your Current Level">
+        <div id="level-badge" class="level-badge" onclick="openStats()" title="Open Stats">
           <span class="level-label">LVL</span>
           <span id="user-level" class="level-val">1</span>
         </div>
-        <div id="top-coins-display"
+        <div id="top-coins-display" onclick="openShop()" title="Open Shop"
 
-          style="display:flex; align-items:center; gap:6px; background:rgba(229, 192, 123, 0.1); border:1px solid rgba(229, 192, 123, 0.3); padding:6px 10px; border-radius:8px; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+          style="display:flex; align-items:center; gap:6px; background:rgba(229, 192, 123, 0.1); border:1px solid rgba(229, 192, 123, 0.3); padding:6px 10px; border-radius:8px; text-shadow: 0 1px 3px rgba(0,0,0,0.6); cursor:pointer;">
           <span style="font-size:1rem; line-height:1;">🪙</span>
           <span id="points-display"
             style="color:var(--gold); font-weight:800; font-size:0.95rem; line-height:1;">0</span>
