@@ -1957,7 +1957,8 @@
             #3</span>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;position:relative;">
+      <div style="display:flex;align-items:center;gap:10px;position:relative;">
+        <div id="multiplier-badge" style="color:var(--gold); font-weight:800; font-size:1.1rem; display:none; filter: drop-shadow(0 0 4px rgba(229,192,123,0.3)); letter-spacing: -0.5px;">1.15x</div>
         <div id="top-coins-display"
           style="display:flex; align-items:center; gap:6px; background:rgba(229, 192, 123, 0.1); border:1px solid rgba(229, 192, 123, 0.3); padding:6px 10px; border-radius:8px; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
           <span style="font-size:1rem; line-height:1;">🪙</span>
@@ -2166,7 +2167,8 @@
 
         <div style="background: var(--glass2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 24px;">
           <p style="font-weight: 700; color: var(--gold); margin: 0 0 8px 0; font-size: 1rem;">🪙 Rewards:</p>
-          <p style="margin:0; font-size: 0.9rem;">Earn <b>1 coin</b> for a correct guess, plus <b>1 coin</b> for every remaining guess!</p>
+          <p style="margin:0 0 8px 0; font-size: 0.9rem;">Earn <b>1 coin</b> for a correct guess, plus <b>1 coin</b> for every remaining guess!</p>
+          <p style="margin:0; font-size: 0.85rem; color: var(--accent2); font-weight: 600;">✨ Saturday Bonus: Enjoy a 1.15x coin multiplier every Saturday!</p>
         </div>
 
         <div style="padding-top:20px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text3); line-height:1.4">
@@ -2612,6 +2614,17 @@
       if (display) display.textContent = userPoints;
       const shopDisp = document.getElementById('shop-points-display');
       if (shopDisp) shopDisp.textContent = userPoints;
+
+      const badge = document.getElementById('multiplier-badge');
+      if (badge) {
+        const isSat = new Date().getDay() === 6;
+        badge.style.display = isSat ? 'block' : 'none';
+      }
+    }
+
+    function calculateEarnedPoints(base) {
+      if (new Date().getDay() === 6) return Math.floor(base * 1.15);
+      return base;
     }
 
     // ============ GAME LOGIC ============
@@ -2710,12 +2723,13 @@
                   localStorage.setItem('cladeify_tot_guesses', totGuesses);
                   localStorage.setItem('cladeify_tracked_wins', trackedWins);
 
-                  const earned = 1 + (maxGuesses - numGuesses);
+                  const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
                   userPoints += earned;
                   localStorage.setItem('cladeify_points', userPoints);
                   updatePointsDisplay();
                   syncLocalToCloud();
-                  setTimeout(() => showToast(`Earned ${earned} points!`), 500);
+                  const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
+                  setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
 
                 } else if (lastWin != puzzleDay) {
                   plays++;
@@ -2733,12 +2747,13 @@
                   localStorage.setItem('cladeify_tot_guesses', totGuesses);
                   localStorage.setItem('cladeify_tracked_wins', trackedWins);
 
-                  const earned = 1 + (maxGuesses - numGuesses);
+                  const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
                   userPoints += earned;
                   localStorage.setItem('cladeify_points', userPoints);
                   updatePointsDisplay();
                   syncLocalToCloud();
-                  setTimeout(() => showToast(`Earned ${earned} points!`), 500);
+                  const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
+                  setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
                 }
 
                 // Final safety check: Max streak should never be less than current streak
@@ -2836,12 +2851,13 @@
           localStorage.setItem('cladeify_tot_guesses', totGuesses);
           localStorage.setItem('cladeify_tracked_wins', trackedWins);
 
-          const earned = 1 + (maxGuesses - numGuesses);
+          const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
           userPoints += earned;
           localStorage.setItem('cladeify_points', userPoints);
           updatePointsDisplay();
           syncLocalToCloud();
-          setTimeout(() => showToast(`Earned ${earned} points!`), 500);
+          const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
+          setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
 
         } else if (lastWin != puzzleDay) {
           plays++;
@@ -2858,12 +2874,13 @@
           localStorage.setItem('cladeify_tot_guesses', totGuesses);
           localStorage.setItem('cladeify_tracked_wins', trackedWins);
 
-          const earned = 1 + (maxGuesses - numGuesses);
+          const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
           userPoints += earned;
           localStorage.setItem('cladeify_points', userPoints);
           updatePointsDisplay();
           syncLocalToCloud();
-          setTimeout(() => showToast(`Earned ${earned} points!`), 500);
+          const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
+          setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
         } else if (lastWin != puzzleDay) {
           plays++;
           wins++;
@@ -2879,12 +2896,13 @@
           localStorage.setItem('cladeify_tot_guesses', totGuesses);
           localStorage.setItem('cladeify_tracked_wins', trackedWins);
 
-          const earned = 1 + (maxGuesses - numGuesses);
+          const earned = calculateEarnedPoints(1 + (maxGuesses - numGuesses));
           userPoints += earned;
           localStorage.setItem('cladeify_points', userPoints);
           updatePointsDisplay();
           syncLocalToCloud();
-          setTimeout(() => showToast(`Earned ${earned} points!`), 500);
+          const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
+          setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
         }
 
         if (streak > maxStreak) {
