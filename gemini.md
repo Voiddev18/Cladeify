@@ -13,7 +13,7 @@ Cladeify is a daily, interactive phylogenetic guessing game. Players identify a 
 - **Single-File Build:** All styles, DOM, and JS live in one monolithic `index.html` (vanilla HTML/CSS/JS, no frameworks).
 - **Tree Visualization:** SVG canvas overlay dynamically constructed via JS (`layoutNode()`) with vertical stagger calculations for mobile.
 - **Wikipedia API:** Async fetch to Wikipedia REST API for clade/animal knowledge panels.
-- **Theme:** "Scientific Journal Dark Mode" — charcoal backgrounds, cyan accents, 1px paper-graph patterns.
+- **Theme:** "Scientific Journal Dark Mode" — charcoal backgrounds, cyan accents, 1px paper-graph patterns. This theme is unified across the main game, social pages, and leaderboard panels.
 
 ### File Structure
 | File | Purpose |
@@ -31,6 +31,29 @@ Cladeify is a daily, interactive phylogenetic guessing game. Players identify a 
 | `README.md` | Basic project overview for the repository landing page. |
 | `Backups/` | Directory containing timestamped historical project snapshots. |
 | `.git/` | Git version control metadata. |
+
+---
+
+## Recent Technical Updates (April 2026)
+
+### 1. Unified Design Language
+The leaderboard and social panels were overhauled to match the "Scientific Journal" dark theme. Standardized on `var(--accent)` (cyan/light blue) for all interactive elements, removing legacy orange/yellow highlight colors.
+
+### 2. Mobile Tree Layout Engine Fixes
+To solve leaf node overlapping on narrow devices (320px-375px):
+- **3-Tier Cascade:** Implemented a `[25px, 65px, 105px]` vertical stagger waterfall for leaf nodes. This ensures that adjacent animal names always land in unique vertical rows, preventing text collisions.
+- **Dynamic Bounding Box:** Updated `svgH` and `levelH` calculations to automatically expand the canvas vertically based on the deepest possible drop in the 3-tier cascade.
+- **Horizontal Buffering:** Increased `leafW` to 65px on mobile to provide sufficient breathing room without forcing excessive horizontal zoom.
+
+### 3. Header Optical Alignment
+The main header layout was geometrically refined:
+- Stripped default browser margins from `<h1>` to anchor the bounding box.
+- Switched to strict `align-items: center` for the logo container.
+- Applied a `-2px` vertical transform to the title/icon for perfect optical baseline matching with the "Social" button on the right.
+
+### 5. Share Button Link & Code Cleanup
+- **Fixed Share URL:** Updated the `shareResults()` text generation to use `https://cladeify.com` instead of the legacy GitHub Pages URL.
+- **Deduplication:** Removed a redundant `shareResults()` and `getShareText()` function block that was causing confusion. Standardized on the single-argument `shareResults(btnElement)` version which supports modern clipboard copying and fallback mechanisms.
 
 ---
 

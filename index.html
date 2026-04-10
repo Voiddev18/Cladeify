@@ -2183,38 +2183,7 @@
       }
       renderTree();
     }
-    function getShareText() {
-      const dayLabel = puzzleDay + 2;
-      const won = guesses.some(g => g && g.n === answer.n);
-      const realGuesses = guesses.filter(g => g !== null);
-      const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
 
-      let text = `🧬 Cladeify Day #${dayLabel}\n`;
-      text += won ? `Guessed in ${realGuesses.length}/${maxGuesses}! ` + (streak > 0 ? `🔥 Streak: ${streak}\n` : `\n`) : `X/${maxGuesses}\n`;
-      let trackedWins = parseInt(localStorage.getItem('cladeify_tracked_wins')) || 0;
-      let totGuesses = parseInt(localStorage.getItem('cladeify_tot_guesses')) || 0;
-      if (trackedWins > 0) {
-        text += `📊 Avg Guesses: ${(totGuesses/trackedWins).toFixed(1)}\n`;
-      }
-      text += '\n';
-      // Build emoji grid based on guess closeness
-      for (const g of realGuesses) {
-        const lca = getLCA(g.t, answer.t);
-        const ratio = lca.depth / (answer.t.length - 1);
-        if (g.n === answer.n) text += '🟩';
-        else if (ratio >= 0.7) text += '🟨';
-        else if (ratio >= 0.4) text += '🟧';
-        else text += '🟥';
-      }
-      text += '\nhttps://cladeify.com'; // placeholder URL
-      return text;
-    }
-
-    // ============ SHARE RESULTS ============
-    function shareResults() {
-      const text = getShareText();
-      navigator.clipboard.writeText(text).then(() => showToast('Results copied to clipboard!')).catch(() => showToast('Could not copy'));
-    }
 
     // ============ COUNTDOWN TIMER ============
     function updateCountdown() {
@@ -2348,15 +2317,11 @@
       const kids = Object.values(node.children);
       const isMobile = window.innerWidth <= 768;
       if (kids.length === 0) {
-        if (isMobile) {
-          const staggers = [25, 65, 105];
-          node.y += staggers[leafIndex % 3];
-        }
+        // No vertical stagger needed since horizontal allocation is now proportional
         leafIndex++;
         return;
       }
-      const leafCount = k => Object.keys(k.children).length === 0 ? 1 : Object.values(k.children).reduce((s, c) => s + leafCount(c), 0);
-      const counts = kids.map(k => leafCount(k));
+      const counts = kids.map(k => getSubtreeWidth(k));
       const total = counts.reduce((a, b) => a + b, 0);
       let cx = x - w / 2;
       const vGap = isMobile ? 95 : 110;
@@ -2552,7 +2517,12 @@
       for (const child of Object.values(node.children)) drawNodes(svg, child, node);
     }
 
-    const totalLeaves = (n) => Object.keys(n.children).length === 0 ? 1 : Object.values(n.children).reduce((s, c) => s + totalLeaves(c), 0);
+    const getSubtreeWidth = (n) => {
+      if (Object.keys(n.children).length === 0) {
+        return Math.max(n.name.length * 8 + 28, 70) + (window.innerWidth <= 768 ? 20 : 40);
+      }
+      return Object.values(n.children).reduce((s, c) => s + getSubtreeWidth(c), 0);
+    };
     const getMaxDepth = (n) => Object.keys(n.children).length === 0 ? 0 : 1 + Math.max(...Object.values(n.children).map(c => getMaxDepth(c)));
 
     function renderTree() {
@@ -2567,17 +2537,16 @@
 
       pruneTrie(trie);
 
-      const tl = totalLeaves(trie);
       const isMobile = window.innerWidth <= 768;
-      const leafW = isMobile ? 65 : 160;
       const minW = isMobile ? window.innerWidth : 600;
-      const svgW = Math.max(minW, tl * leafW);
+      const treeWidthReq = getSubtreeWidth(trie);
+      const svgW = Math.max(minW, treeWidthReq + 60);
       const md = getMaxDepth(trie);
       const levelH = isMobile ? 95 : 110;
       const svgH = Math.max(isMobile ? 400 : 350, (md + 1) * levelH + (isMobile ? 180 : 80));
 
       leafIndex = 0;
-      layoutNode(trie, svgW / 2, 40, svgW - 60);
+      layoutNode(trie, svgW / 2, 40, Math.max(minW - 60, treeWidthReq));
       rootPos = { x: trie.x, y: trie.y };
 
       const svgEl = document.getElementById('tree-svg');
@@ -3150,7 +3119,7 @@
         else emojiHtml += '🟥';
       }
 
-      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://voiddev18.github.io/Cladeify/`;
+      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://cladeify.com`;
 
       fallbackCopy(text, btnElement);
     }

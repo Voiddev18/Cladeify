@@ -2183,38 +2183,7 @@
       }
       renderTree();
     }
-    function getShareText() {
-      const dayLabel = puzzleDay + 2;
-      const won = guesses.some(g => g && g.n === answer.n);
-      const realGuesses = guesses.filter(g => g !== null);
-      const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
 
-      let text = `🧬 Cladeify Day #${dayLabel}\n`;
-      text += won ? `Guessed in ${realGuesses.length}/${maxGuesses}! ` + (streak > 0 ? `🔥 Streak: ${streak}\n` : `\n`) : `X/${maxGuesses}\n`;
-      let trackedWins = parseInt(localStorage.getItem('cladeify_tracked_wins')) || 0;
-      let totGuesses = parseInt(localStorage.getItem('cladeify_tot_guesses')) || 0;
-      if (trackedWins > 0) {
-        text += `📊 Avg Guesses: ${(totGuesses/trackedWins).toFixed(1)}\n`;
-      }
-      text += '\n';
-      // Build emoji grid based on guess closeness
-      for (const g of realGuesses) {
-        const lca = getLCA(g.t, answer.t);
-        const ratio = lca.depth / (answer.t.length - 1);
-        if (g.n === answer.n) text += '🟩';
-        else if (ratio >= 0.7) text += '🟨';
-        else if (ratio >= 0.4) text += '🟧';
-        else text += '🟥';
-      }
-      text += '\nhttps://cladeify.com'; // placeholder URL
-      return text;
-    }
-
-    // ============ SHARE RESULTS ============
-    function shareResults() {
-      const text = getShareText();
-      navigator.clipboard.writeText(text).then(() => showToast('Results copied to clipboard!')).catch(() => showToast('Could not copy'));
-    }
 
     // ============ COUNTDOWN TIMER ============
     function updateCountdown() {
@@ -3150,7 +3119,7 @@
         else emojiHtml += '🟥';
       }
 
-      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://voiddev18.github.io/Cladeify/`;
+      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://cladeify.com`;
 
       fallbackCopy(text, btnElement);
     }
