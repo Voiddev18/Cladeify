@@ -820,13 +820,28 @@
 
     .modal .close-btn {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: none;
+      top: 14px;
+      right: 14px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 50%;
       color: var(--text3);
-      font-size: 1.3rem;
-      cursor: pointer
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
+    }
+
+    .modal .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border-color: var(--accent);
+      transform: scale(1.1);
     }
 
     /* WIN BANNER */
@@ -2001,6 +2016,11 @@
         </svg>
       </div>
       <div id="left-panel">
+        <div id="quick-rules" style="padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg3); font-size: 0.75rem; color: var(--text3); display: flex; align-items: center; gap: 10px; line-height: 1.4;">
+          <span style="font-size: 1rem;">💡</span>
+          <div>Guess animals to reveal their <b>taxonomic relationship</b>. Colors indicate proximity.</div>
+          <button onclick="openHowToPlay()" style="margin-left: auto; background: rgba(94, 176, 249, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 700; white-space: nowrap; transition: background 0.2s;" onmouseover="this.style.background='rgba(94,176,249,0.2)'" onmouseout="this.style.background='rgba(94,176,249,0.1)'">RULES</button>
+        </div>
         <div id="guess-section">
           <div style="display:flex;align-items:baseline; justify-content:space-between; width:100%;">
             <div style="display:flex;align-items:baseline">
@@ -2104,11 +2124,22 @@
     onclick="if(event.target===this) this.style.display='none'">
     <div class="modal" id="shop-modal">
       <button class="close-btn" onclick="document.getElementById('shop-overlay').style.display='none'">✕</button>
-      <h2>🛒 Shop</h2>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <p style="color:var(--text3); font-size: 0.85rem; margin: 0;">Use your points to buy stuff!</p>
-        <div
-          style="background:var(--bg3); padding:4px 10px; border-radius:20px; font-weight:bold; color:var(--gold); border:1px solid var(--glass); font-size: 0.8rem;">
+      <h2 style="margin: 4px 0 16px 0; text-align: center;">🛒 Shop</h2>
+
+      <!-- EARNING INFO -->
+      <div style="background: rgba(229, 192, 123, 0.05); border: 1px solid rgba(229, 192, 123, 0.15); border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 0.75rem; color: var(--text3); text-align: center; line-height: 1.4;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+           <div style="display: flex; align-items: center; gap: 8px;">
+             <span style="font-size: 0.9rem;">🎫</span>
+             <span>Earn <b>1 coin</b> per win + <b>1 coin</b> per extra guess.</span>
+           </div>
+           <div style="color: var(--gold); font-weight: 700;">✨ Weekends: 1.15x Multiplier Active!</div>
+        </div>
+      </div>
+
+      <!-- POINTS POCKET -->
+      <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <div style="background: var(--bg3); padding: 6px 18px; border-radius: 20px; font-weight: 800; color: var(--gold); border: 2px solid rgba(229, 192, 123, 0.25); font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.25);">
           <span id="shop-points-display">0</span> 🪙
         </div>
       </div>
@@ -2169,7 +2200,7 @@
         <div style="background: var(--glass2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 24px;">
           <p style="font-weight: 700; color: var(--gold); margin: 0 0 8px 0; font-size: 1rem;">🪙 Rewards:</p>
           <p style="margin:0 0 8px 0; font-size: 0.9rem;">Earn <b>1 coin</b> for a correct guess, plus <b>1 coin</b> for every remaining guess!</p>
-          <p style="margin:0; font-size: 0.85rem; color: var(--accent2); font-weight: 600;">✨ Saturday Bonus: Enjoy a 1.15x coin multiplier every Saturday!</p>
+          <p style="margin:0; font-size: 0.85rem; color: var(--accent2); font-weight: 600;">✨ Weekend Bonus: Enjoy a 1.15x coin multiplier every Saturday & Sunday!</p>
         </div>
 
         <div style="padding-top:20px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text3); line-height:1.4">
@@ -2618,13 +2649,15 @@
 
       const badge = document.getElementById('multiplier-badge');
       if (badge) {
-        const isSat = new Date().getDay() === 6;
-        badge.style.display = isSat ? 'block' : 'none';
+        const d = new Date().getDay();
+        const isWeekend = (d === 6 || d === 0);
+        badge.style.display = isWeekend ? 'block' : 'none';
       }
     }
 
     function calculateEarnedPoints(base) {
-      if (new Date().getDay() === 6) return Math.floor(base * 1.15);
+      const d = new Date().getDay();
+      if (d === 6 || d === 0) return Math.round(base * 1.15);
       return base;
     }
 
@@ -2729,8 +2762,9 @@
                   localStorage.setItem('cladeify_points', userPoints);
                   updatePointsDisplay();
                   syncLocalToCloud();
-                  const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
-                  setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
+                  const d = new Date().getDay();
+                  const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
+                  setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
 
                 } else if (lastWin != puzzleDay) {
                   plays++;
@@ -2753,8 +2787,9 @@
                   localStorage.setItem('cladeify_points', userPoints);
                   updatePointsDisplay();
                   syncLocalToCloud();
-                  const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
-                  setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
+                  const d = new Date().getDay();
+                  const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
+                  setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
                 }
 
                 // Final safety check: Max streak should never be less than current streak
@@ -2857,8 +2892,9 @@
           localStorage.setItem('cladeify_points', userPoints);
           updatePointsDisplay();
           syncLocalToCloud();
-          const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
-          setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
+          const d = new Date().getDay();
+          const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
+          setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
 
         } else if (lastWin != puzzleDay) {
           plays++;
@@ -2880,8 +2916,9 @@
           localStorage.setItem('cladeify_points', userPoints);
           updatePointsDisplay();
           syncLocalToCloud();
-          const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
-          setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
+          const d = new Date().getDay();
+          const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
+          setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
         } else if (lastWin != puzzleDay) {
           plays++;
           wins++;
@@ -2902,8 +2939,9 @@
           localStorage.setItem('cladeify_points', userPoints);
           updatePointsDisplay();
           syncLocalToCloud();
-          const satMsg = (new Date().getDay() === 6) ? " (1.15x Saturday Bonus!)" : "";
-          setTimeout(() => showToast(`Earned ${earned} points!${satMsg}`), 500);
+          const d = new Date().getDay();
+          const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
+          setTimeout(() => showToast(`Earned ${earned} points!${bonusMsg}`), 500);
         }
 
         if (streak > maxStreak) {
