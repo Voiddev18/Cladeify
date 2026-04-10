@@ -2348,10 +2348,7 @@
       const kids = Object.values(node.children);
       const isMobile = window.innerWidth <= 768;
       if (kids.length === 0) {
-        if (isMobile) {
-          const staggers = [25, 65, 105];
-          node.y += staggers[leafIndex % 3];
-        }
+        if (isMobile) node.y += (leafIndex % 2 === 0 ? 40 : 80);
         leafIndex++;
         return;
       }
@@ -2359,7 +2356,7 @@
       const counts = kids.map(k => leafCount(k));
       const total = counts.reduce((a, b) => a + b, 0);
       let cx = x - w / 2;
-      const vGap = isMobile ? 95 : 110;
+      const vGap = isMobile ? 80 : 110;
       for (let i = 0; i < kids.length; i++) {
         const cw = (counts[i] / total) * w;
         layoutNode(kids[i], cx + cw / 2, y + vGap, cw);
@@ -2569,12 +2566,12 @@
 
       const tl = totalLeaves(trie);
       const isMobile = window.innerWidth <= 768;
-      const leafW = isMobile ? 65 : 160;
+      const leafW = isMobile ? 58 : 160;
       const minW = isMobile ? window.innerWidth : 600;
       const svgW = Math.max(minW, tl * leafW);
       const md = getMaxDepth(trie);
-      const levelH = isMobile ? 95 : 110;
-      const svgH = Math.max(isMobile ? 400 : 350, (md + 1) * levelH + (isMobile ? 180 : 80));
+      const levelH = isMobile ? 80 : 110;
+      const svgH = Math.max(isMobile ? 400 : 350, (md + 1) * levelH + (isMobile ? 150 : 80));
 
       leafIndex = 0;
       layoutNode(trie, svgW / 2, 40, svgW - 60);
