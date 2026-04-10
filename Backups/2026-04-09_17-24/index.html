@@ -79,10 +79,7 @@
       background: linear-gradient(135deg, var(--accent), #a3d4ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      letter-spacing: -0.5px;
-      margin: 0;
-      line-height: 1;
-      transform: translateY(-2px);
+      letter-spacing: -0.5px
     }
 
     header .game-num {
@@ -113,34 +110,6 @@
       border-color: var(--accent);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(94, 176, 249, 0.15)
-    }
-
-    header #lb-open-btn {
-      background: var(--glass2);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all .2s;
-      font-weight: 800;
-      font-size: 0.95rem;
-      font-family: inherit;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    header #lb-open-btn:hover {
-      background: var(--glass);
-      border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(94, 176, 249, 0.15);
-      transform: translateY(-1px);
-    }
-    
-    header #lb-open-btn span {
-      background: linear-gradient(135deg, var(--accent), #a3d4ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
 
     main {
@@ -860,7 +829,7 @@
       font-size: 1.6rem;
       font-weight: 800;
       margin: 0 0 4px;
-      background: linear-gradient(135deg, var(--accent), #a3d4ff);
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent
     }
@@ -910,8 +879,8 @@
     }
     .lb-tab:hover { color: var(--text2) }
     .lb-tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent)
+      color: #ffd700;
+      border-bottom-color: #ffd700
     }
 
     /* Leaderboard content */
@@ -944,15 +913,15 @@
       transition: border-color .2s
     }
     .lb-username-bar input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(94, 176, 249, 0.12)
+      border-color: #ffd700;
+      box-shadow: 0 0 0 3px rgba(255,215,0,0.12)
     }
     .lb-username-bar button {
       padding: 10px 18px;
       border-radius: 10px;
       border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
+      background: linear-gradient(135deg, #ffd700, #f0a000);
+      color: #000;
       font-weight: 700;
       font-family: inherit;
       font-size: 0.85rem;
@@ -962,7 +931,7 @@
     }
     .lb-username-bar button:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(94, 176, 249, 0.25)
+      box-shadow: 0 4px 12px rgba(255,215,0,0.25)
     }
     .lb-username-bar button:disabled {
       opacity: .5;
@@ -1011,7 +980,7 @@
       color: var(--text)
     }
     .lb-table .player-you {
-      color: var(--accent);
+      color: #ffd700;
       font-weight: 700
     }
     .lb-table .streak-badge {
@@ -1037,22 +1006,17 @@
 
     /* My stats card in leaderboard */
     .lb-my-stats {
-      background: linear-gradient(135deg, rgba(94, 176, 249, 0.08), rgba(94, 176, 249, 0.04));
-      border: 1px solid rgba(94, 176, 249, 0.15);
+      background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,170,0,0.04));
+      border: 1px solid rgba(255,215,0,0.15);
       border-radius: 14px;
-      padding: 16px 8px;
+      padding: 16px;
       margin-bottom: 18px;
       display: flex;
       justify-content: space-around;
-      gap: 4px
+      gap: 8px
     }
     .lb-my-stats .ms {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      flex: 1;
-      text-align: center;
+      text-align: center
     }
     .lb-my-stats .ms .mv {
       font-size: 1.4rem;
@@ -1260,7 +1224,7 @@
       display: inline-block;
       width: 20px; height: 20px;
       border: 2px solid var(--border);
-      border-top-color: var(--accent);
+      border-top-color: #ffd700;
       border-radius: 50%;
       animation: spin .6s linear infinite;
       margin-bottom: 8px
@@ -1329,6 +1293,12 @@
         line-height: 1.2
       }
 
+      .share-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        white-space: nowrap
+      }
+
       .lb-btn {
         padding: 6px 12px;
         font-size: 0.75rem;
@@ -1390,13 +1360,14 @@
 <body>
   <div id="app">
     <header>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:baseline;gap:8px">
         <h1>🧬 Cladeify</h1>
         <span class="game-num" id="game-num">Daily #1</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <span id="countdown"></span>
-        <button id="lb-open-btn" onclick="openLeaderboard()" title="Social"><span>Social 👥</span></button>
+        <button class="lb-btn" id="lb-open-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
+        <button class="share-btn" id="share-btn" onclick="shareResults()">Share <span>🔗</span></button>
       </div>
     </header>
     <main>
@@ -1487,8 +1458,8 @@
         </div>
       </div>
       <div style="display:flex; justify-content:center; gap:12px; margin-bottom: 18px">
-        <button class="banner-share-btn" style="margin-bottom:0px; width: auto; padding: 12px 24px;" onclick="openLeaderboard()"><span style="background: linear-gradient(135deg, var(--accent), #a3d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Social 👥</span></button>
-        <button class="banner-share-btn" style="margin-bottom:0px; width: auto; padding: 12px 24px;" onclick="shareResults(this)">Share <span>🔗</span></button>
+        <button class="banner-share-btn" style="margin-bottom:0" onclick="document.getElementById('lb-overlay').classList.add('show')">Leaderboard <span>🏆</span></button>
+        <button class="banner-share-btn" style="margin-bottom:0" onclick="shareResults()">Share <span>🔗</span></button>
       </div>
       <div class="banner-credit">A redesign of <a href="https://metazooa.com" target="_blank">Metazooa</a> by <strong>Trainwreck Labs</strong></div>
     </div>
@@ -1499,8 +1470,8 @@
     <div id="lb-modal">
       <button class="lb-close" onclick="document.getElementById('lb-overlay').classList.remove('show')" aria-label="Close">✕</button>
       <div class="lb-header">
-        <h2>👥 Social</h2>
-        <p>Connect and compete with other players</p>
+        <h2>🏆 Leaderboard</h2>
+        <p>See how you compare to other players</p>
       </div>
       <div class="lb-tabs">
         <button class="lb-tab active" data-tab="today" onclick="switchLbTab('today')">Today</button>
@@ -1985,6 +1956,7 @@
               if (guesses.some(g => g && g.n === answer.n)) {
                 const numGuesses = guesses.filter(g => g).length;
                 document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${numGuesses} guess${numGuesses > 1 ? 'es' : ''}!`;
+                document.getElementById('share-btn').style.display = 'inline-flex';
                 showWikiForAnimal(answer, "🎉 You found it!");
                 if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999, disableForReducedMotion: true });
                 // Check if we need to record this win in our stats (if not already recorded today)
@@ -2043,6 +2015,7 @@
                 document.getElementById('win-msg').querySelector('h3').textContent = '😔 Game Over';
                 document.getElementById('win-msg').querySelector('h3').style.color = 'var(--red)';
                 document.getElementById('win-text').textContent = `The answer was ${answer.n}.`;
+                document.getElementById('share-btn').style.display = 'inline-flex';
                 showWikiForAnimal(answer, "The mystery animal was " + answer.n + ".");
               }
             }
@@ -2058,6 +2031,7 @@
       document.getElementById('guess-input').disabled = false;
       document.getElementById('guess-btn').disabled = false;
       document.getElementById('win-msg').style.display = 'none';
+      document.getElementById('share-btn').style.display = 'none';
       document.getElementById('guess-list').innerHTML = '';
       document.getElementById('wiki-content').innerHTML = '<div class="wiki-placeholder"><span class="icon">🔍</span>Make a guess to see taxonomic info here.</div>';
       renderTree();
@@ -2148,6 +2122,7 @@
         document.getElementById('win-text').textContent = `The answer was ${answer.n}! You got it in ${guesses.length} guess${guesses.length > 1 ? 'es' : ''}!`;
         document.getElementById('guess-input').disabled = true;
         document.getElementById('guess-btn').disabled = true;
+        document.getElementById('share-btn').style.display = 'inline-flex';
         saveDailyState();
         showWikiForAnimal(answer, "🎉 You found it!");
         // Show win banner
@@ -2178,12 +2153,14 @@
         document.getElementById('win-text').textContent = `The answer was ${answer.n}.`;
         document.getElementById('guess-input').disabled = true;
         document.getElementById('guess-btn').disabled = true;
+        document.getElementById('share-btn').style.display = 'inline-flex';
         saveDailyState();
         showWikiForAnimal(answer, "The mystery animal was " + answer.n + ".");
       }
       renderTree();
     }
-    function getShareText() {
+    // ============ SHARE RESULTS ============
+    function shareResults() {
       const dayLabel = puzzleDay + 2;
       const won = guesses.some(g => g && g.n === answer.n);
       const realGuesses = guesses.filter(g => g !== null);
@@ -2207,12 +2184,6 @@
         else text += '🟥';
       }
       text += '\nhttps://cladeify.com'; // placeholder URL
-      return text;
-    }
-
-    // ============ SHARE RESULTS ============
-    function shareResults() {
-      const text = getShareText();
       navigator.clipboard.writeText(text).then(() => showToast('Results copied to clipboard!')).catch(() => showToast('Could not copy'));
     }
 
@@ -2707,9 +2678,7 @@
     // ============ LEADERBOARD ============
     function openLeaderboard() {
       document.getElementById('lb-overlay').classList.add('show');
-      let activeTab = document.querySelector('.lb-tab.active')?.dataset.tab;
-      if (!activeTab || activeTab === 'share') activeTab = 'today';
-      switchLbTab(activeTab);
+      switchLbTab('today');
     }
     function closeLbIfOutside(e) {
       if (e.target === document.getElementById('lb-overlay')) {
@@ -3031,8 +3000,8 @@
       html += `<div class="lb-my-stats">
         <div class="ms"><div class="mv">${stats.plays}</div><div class="ml">Plays</div></div>
         <div class="ms"><div class="mv">${stats.wins}</div><div class="ml">Wins</div></div>
-        <div class="ms"><div class="mv">${stats.plays > 0 ? Math.round((stats.wins/stats.plays)*100) : 0}%</div><div class="ml">Win %</div></div>
-        <div class="ms"><div class="mv">${stats.trackedWins > 0 ? (stats.totGuesses/stats.trackedWins).toFixed(1) : '-'}</div><div class="ml">Avg</div></div>
+        <div class="ms"><div class="mv">${stats.plays > 0 ? Math.round((stats.wins/stats.plays)*100) : 0}%</div><div class="ml">Win Rate</div></div>
+        <div class="ms"><div class="mv">${stats.trackedWins > 0 ? (stats.totGuesses/stats.trackedWins).toFixed(1) : '-'}</div><div class="ml">Avg Guesses</div></div>
         <div class="ms"><div class="mv">${stats.streak}</div><div class="ml">Streak</div></div>
         <div class="ms"><div class="mv">${stats.maxStreak}</div><div class="ml">Best</div></div>
       </div>`;
@@ -3122,46 +3091,7 @@
         html += `</tbody></table>`;
       }
 
-      html += `<div style="text-align:center; padding: 20px 0 10px 0; border-top: 1px solid var(--border); margin-top: 16px;">
-        <button style="display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--glass2); border:1px solid var(--border); color:var(--text); padding:10px 24px; border-radius:8px; font-size:0.95rem; font-weight:600; font-family:inherit; cursor:pointer; transition:all 0.2s;" onclick="shareResults(this)" onmouseover="this.style.background='var(--glass)';this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.background='var(--glass2)';this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-          Share Results <span>🔗</span>
-        </button>
-      </div>`;
-
       body.innerHTML = html;
-    }
-
-    function shareResults(btnElement) {
-      const dayLabel = puzzleDay + 2;
-      const streak = parseInt(localStorage.getItem('cladeify_streak')) || 0;
-      const realGuesses = guesses.filter(g => g !== null);
-      const won = guesses.some(g => g && g.n === answer.n);
-      
-      let emojiHtml = '';
-      for (const g of realGuesses) {
-        const lca = getLCA(g.t, answer.t);
-        const ratio = lca.depth / (answer.t.length - 1);
-        if (g.n === answer.n) emojiHtml += '🟩';
-        else if (ratio >= 0.7) emojiHtml += '🟨';
-        else if (ratio >= 0.4) emojiHtml += '🟧';
-        else emojiHtml += '🟥';
-      }
-
-      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://voiddev18.github.io/Cladeify/`;
-
-      fallbackCopy(text, btnElement);
-    }
-
-    function fallbackCopy(text, btnElement) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-          showToast('Copied to clipboard!');
-        }).catch(() => {
-          showToast('Failed to copy text.');
-        });
-      } else {
-        showToast('Clipboard not supported');
-      }
     }
 
     function toggleLbSettings() {
