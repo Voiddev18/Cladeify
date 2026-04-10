@@ -660,6 +660,7 @@
       position: fixed;
       inset: -50px;
       background: var(--tree-bg, #15171c);
+      background-color: var(--tree-bg-color, transparent);
       background-size: var(--tree-bg-size, auto);
       background-position: var(--tree-bg-pos, 0 0);
       z-index: -2;
@@ -669,6 +670,16 @@
     @keyframes tree-bg-drift {
       0% { transform: scale(1) translate(0,0); }
       100% { transform: scale(1.05) translate(10px, 10px); }
+    }
+
+    .disco-active::before {
+      animation: discoAnim 1.5s steps(6) infinite !important;
+    }
+
+    @keyframes discoAnim {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      50% { filter: hue-rotate(180deg) brightness(1.5); }
+      100% { filter: hue-rotate(360deg) brightness(1); }
     }
 
     @keyframes stardustAnim {
@@ -739,11 +750,13 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.7);
       z-index: 200;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
       animation: fadeIn .2s
     }
 
@@ -1200,6 +1213,7 @@
         background: var(--glass);
         border-color: var(--accent);
     }
+    .lb-tab {
       cursor: pointer;
       border-bottom: 2px solid transparent;
       transition: all .2s;
@@ -1207,7 +1221,11 @@
       border-top: none;
       border-left: none;
       border-right: none;
-      font-family: inherit
+      font-family: inherit;
+      color: var(--text3);
+      padding: 12px 0;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
 
     .lb-tab:hover {
@@ -1951,6 +1969,35 @@
         width: auto;
         height: 100%
       }
+
+      /* Responsive Modal Fixes */
+      .modal {
+        padding: 24px 16px !important;
+        margin: 10px;
+        max-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+      }
+      .modal .close-btn, .lb-close, .htp-close {
+        top: 8px !important;
+        right: 8px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        z-index: 100 !important;
+      }
+      #shop-content {
+        max-height: 50vh !important;
+      }
+      #lb-modal, #htp-modal, .modal {
+        padding: 24px 16px !important;
+        margin: 10px auto;
+        max-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+        width: 95% !important;
+      }
     }
   </style>
   <script src="https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js"></script>
@@ -2170,8 +2217,7 @@
           border-radius: 4px;
         }
       </style>
-      <div id="shop-auth-msg" style="color:var(--red); font-size: 0.8rem; margin-top: 10px; display:none;">Log in via
-        Leaderboard to use the shop.</div>
+      <div id="shop-auth-msg" style="color:var(--accent); font-size: 0.8rem; margin-top: 10px; display:none;">✨ Testing Mode: All items are free!</div>
     </div>
   </div>
 
@@ -3495,9 +3541,24 @@
       messagingSenderId: "431501453055",
       appId: "1:431501453055:web:7192eb7c4e915e0e784eca"
     };
-    const fbApp = firebase.initializeApp(firebaseConfig);
-    const fbAuth = firebase.auth();
-    const fbDb = firebase.firestore();
+    let fbAuth, fbDb;
+    try {
+      if (typeof firebase !== 'undefined') {
+        const fbApp = firebase.initializeApp(firebaseConfig);
+        fbAuth = firebase.auth();
+        fbDb = firebase.firestore();
+      } else {
+        throw new Error('Firebase SDK not loaded');
+      }
+    } catch (e) {
+      console.warn('Firebase initialization bypassed or failed. Cloud features disabled.');
+      fbAuth = { 
+        onAuthStateChanged: (cb) => { if(cb) cb(null); }, 
+        signInWithPopup: () => { throw new Error('Auth Unavailable'); },
+        signOut: () => { return Promise.resolve(); }
+      };
+      fbDb = null;
+    }
     let fbUser = null; // current Firebase user (null = not logged in)
     let lbCloudData = []; // cached cloud leaderboard entries
     let lbCloudLoading = false;
@@ -3529,7 +3590,30 @@
     const COSMETICS = {
       treeBg: [
         { id: 'tree_default', name: 'Original', desc: 'Clean slate', cost: 0, val: 'transparent' },
-        { id: 'tree_stardust_1', name: 'Orion', desc: 'Sparse deep space stars', cost: 35, val: 'radial-gradient(1.5px 1.5px at 20px 30px, var(--accent), transparent), radial-gradient(1.5px 1.5px at 140px 170px, var(--text), transparent), radial-gradient(2px 2px at 90px 40px, var(--accent2), transparent)', bgSize: '200px 200px' }
+        { id: 'tree_stardust_1', name: 'Orion', desc: 'Deep space 4-pointed stars', cost: 35, 
+          val: 'radial-gradient(ellipse 1.5% 12% at 20% 30%, var(--accent), transparent), radial-gradient(ellipse 12% 1.5% at 20% 30%, var(--accent), transparent), radial-gradient(circle at 20% 30%, #fff 2%, transparent 4%), radial-gradient(ellipse 1.2% 8% at 75% 70%, var(--text), transparent), radial-gradient(ellipse 8% 1.2% at 75% 70%, var(--text), transparent), radial-gradient(circle at 75% 70%, #fff 1.5%, transparent 3%), radial-gradient(ellipse 1.5% 10% at 45% 20%, var(--accent2), transparent), radial-gradient(ellipse 10% 1.5% at 45% 20%, var(--accent2), transparent), radial-gradient(circle at 45% 20%, #fff 1.5%, transparent 3%)', 
+          bgSize: '200px 200px' 
+        },
+        { id: 'tree_polka', name: 'Polka Dots', desc: 'Random scattered dots', cost: 50, 
+          val: 'radial-gradient(circle at 12% 18%, #000 8px, transparent 8.5px), radial-gradient(circle at 45% 12%, #000 14px, transparent 14.5px), radial-gradient(circle at 75% 25%, #000 10px, transparent 10.5px), radial-gradient(circle at 25% 65%, #000 12px, transparent 12.5px), radial-gradient(circle at 60% 55%, #000 16px, transparent 16.5px), radial-gradient(circle at 85% 75%, #000 9px, transparent 9.5px), radial-gradient(circle at 35% 85%, #000 11px, transparent 11.5px), radial-gradient(circle at 15% 75%, #f2e7d5 11px, transparent 11.5px), radial-gradient(circle at 50% 85%, #f2e7d5 13px, transparent 13.5px), radial-gradient(circle at 88% 18%, #f2e7d5 10px, transparent 10.5px)', 
+          val2: '#ffffff',
+          bgSize: '280px 280px' 
+        },
+        { id: 'tree_bloom', name: 'Stellar Bloom', desc: 'Elegant warm-toned floral symmetry', cost: 180, 
+          val: 'radial-gradient(circle at 50% 50%, #ffb6c1 4%, transparent 4.5%), radial-gradient(circle at 50% 18%, #ff8c69 12%, transparent 12.5%), radial-gradient(circle at 50% 82%, #ff8c69 12%, transparent 12.5%), radial-gradient(circle at 18% 50%, #ff8c69 12%, transparent 12.5%), radial-gradient(circle at 82% 50%, #ff8c69 12%, transparent 12.5%), radial-gradient(circle at 28% 28%, #f7cac9 8%, transparent 8.5%), radial-gradient(circle at 72% 72%, #f7cac9 8%, transparent 8.5%), radial-gradient(circle at 28% 72%, #f7cac9 8%, transparent 8.5%), radial-gradient(circle at 72% 28%, #f7cac9 8%, transparent 8.5%)', 
+          val2: '#020202',
+          bgSize: '100px 100px' 
+        },
+        { id: 'tree_blueprint', name: 'Blueprint', desc: 'Architectural drafting paper', cost: 120, 
+          val: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.05) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.05) 2px, transparent 2px)', 
+          val2: '#1a365d',
+          bgSize: '20px 20px, 20px 20px, 100px 100px, 100px 100px'
+        },
+        { id: 'tree_obsidian', name: 'Obsidian Shard', desc: '3D metallic poly-mesh', cost: 220, 
+          val: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%), linear-gradient(30deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111), linear-gradient(150deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111), linear-gradient(60deg, #bf953f 25%, transparent 25.5%, transparent 75%, #fcf6ba 75%, #fcf6ba), linear-gradient(60deg, #b38728 25%, transparent 25.5%, transparent 75%, #bf953f 75%, #bf953f)', 
+          val2: '#080808',
+          bgSize: '160px 280px, 80px 140px, 80px 140px, 80px 140px, 80px 140px'
+        }
       ],
       theme: [
         { id: 'theme_default', name: 'Dark Mode', desc: 'The standard dark theme', cost: 0, vars: {} },
@@ -3538,7 +3622,8 @@
         { id: 'theme_midnight', name: 'Midnight', desc: 'OLED black with neon blue', cost: 150, vars: { '--bg': '#000000', '--bg2': '#050505', '--bg3': '#0a0a0a', '--text': '#ffffff', '--text2': '#00f3ff', '--text3': '#00707c', '--accent': '#00f3ff', '--accent2': '#0097a7', '--border': 'rgba(0,243,255,0.3)', '--glass2': 'rgba(0,243,243,0.05)', '--node-text': '#ffffff' } },
         { id: 'theme_hacker', name: 'Matrix', desc: 'Neon green hacker theme', cost: 200, vars: { '--bg': '#000000', '--bg2': '#081105', '--bg3': '#0d1f0d', '--text': '#00ff00', '--text2': '#4cf04c', '--text3': '#2a8f2a', '--accent': '#00ff00', '--accent2': '#00cc00', '--border': 'rgba(0,255,0,0.3)', '--glass2': 'rgba(0,255,0,0.1)', '--node-text': '#ffffff' } },
         { id: 'theme_sakura', name: 'Cherry Blossom', desc: 'Soft and lovely pinks', cost: 200, vars: { '--bg': '#E89EB8', '--bg2': '#f2b3c9', '--bg3': '#c77994', '--text': '#2D1A21', '--text2': '#4A2C38', '--text3': '#724859', '--accent': '#C2185B', '--accent2': '#9C1045', '--border': 'rgba(0,0,0,0.15)', '--glass2': 'rgba(255,255,255,0.4)', '--node-text': '#ffffff' } },
-        { id: 'theme_vellum', name: 'Vellum', desc: 'Classic aged paper journal', cost: 250, vars: { '--bg': '#f4eccd', '--bg2': '#ece3ba', '--bg3': '#dfd6a8', '--text': '#2c2211', '--text2': '#4a3d25', '--text3': '#6d5a3d', '--accent': '#8b4513', '--accent2': '#5d2e0d', '--border': 'rgba(139,69,19,0.2)', '--glass2': 'rgba(0,0,0,0.03)', '--node-text': '#2c2211' } }
+        { id: 'theme_vellum', name: 'Vellum', desc: 'Classic aged paper journal', cost: 250, vars: { '--bg': '#f4eccd', '--bg2': '#ece3ba', '--bg3': '#dfd6a8', '--text': '#2c2211', '--text2': '#4a3d25', '--text3': '#6d5a3d', '--accent': '#8b4513', '--accent2': '#5d2e0d', '--border': 'rgba(139,69,19,0.2)', '--glass2': 'rgba(0,0,0,0.03)', '--node-text': '#2c2211' } },
+        { id: 'theme_polka', name: 'Polka Noir', desc: 'Classic black and white', cost: 200, vars: { '--bg': '#ffffff', '--bg2': '#f2f2f2', '--bg3': '#e0e0e0', '--text': '#000000', '--text2': '#222222', '--text3': '#666666', '--accent': '#000000', '--accent2': '#333333', '--border': 'rgba(0,0,0,0.3)', '--glass2': 'rgba(0,0,0,0.05)', '--node-text': '#ffffff' } }
       ],
       nameColor: [
         { id: 'name_default', name: 'Default', desc: 'Standard text color', cost: 0, val: 'var(--text)' },
@@ -3551,7 +3636,7 @@
         { id: 'name_diamond', name: 'Diamond', desc: 'Sparkling ice blue', cost: 75, val: '#b9f2ff' },
         { id: 'name_gold', name: 'Golden Record', desc: 'Shiny legendary gold', cost: 250, val: 'linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)' },
         { id: 'name_plasma', name: 'Plasma Art', desc: 'Flowing cosmic energy', cost: 150, val: 'linear-gradient(45deg, #ff00cc, #3333ff)' },
-        { id: 'name_fire', name: 'Fire King', desc: 'Burning embers', cost: 200, val: 'linear-gradient(to right, #ff0000, #ff4500, #ff8c00, #ffd700)' }
+        { id: 'name_fire', name: 'Molten', desc: 'Burning embers', cost: 200, val: 'linear-gradient(to right, #ff0000, #ff4500, #ff8c00, #ffd700)' }
       ],
       nameBorder: [
         { id: 'border_none', name: 'None', desc: 'Standard look', cost: 0 },
@@ -3580,7 +3665,7 @@
 
       // Apply Tree Background
       document.documentElement.style.setProperty('--tree-bg', treeItem.val);
-      document.documentElement.style.setProperty('--tree-bg-2', treeItem.val2 || 'none');
+      document.documentElement.style.setProperty('--tree-bg-color', treeItem.val2 || 'transparent');
       if (treeItem.bgSize) {
         document.documentElement.style.setProperty('--tree-bg-size', treeItem.bgSize);
       } else {
@@ -3612,7 +3697,7 @@
       // Handle Animated Backgrounds
       const tc = document.getElementById('tree-container');
       if (tc) {
-        tc.classList.remove('stars-active', 'fireworks-active');
+        tc.classList.remove('stars-active', 'fireworks-active', 'disco-active');
         if (treeItem.id === 'tree_stars') {
           tc.classList.add('stars-active');
         } else if (treeItem.id === 'tree_fireworks') {
@@ -3654,7 +3739,7 @@
       const items = [...COSMETICS[category]].sort((a, b) => a.cost - b.cost);
       
       for (const item of items) {
-        const isOwned = ownedCosmetics.includes(item.id) || item.cost === 0;
+        const isOwned = ownedCosmetics.includes(item.id);
         const isActive = activeCosmetics[category] === item.id;
 
         let btnHtml = '';
@@ -3672,24 +3757,47 @@
 
         if (category === 'nameColor' && item.val) {
           const { nColorStyle, nColorClass } = getCosmeticStyle({ nameColorId: item.id }, false);
+          itemWrapperStyle = `display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px; border: 1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}; margin-bottom: 12px; transition: all 0.2s;`;
           previewHtml = `<span class="name-container border_none"><span class="${nColorClass}" style="font-weight:700; ${nColorStyle}">${item.name}</span></span>`;
           descHtml = ''; 
         } else if (category === 'nameBorder') {
           const { nBorderClass } = getCosmeticStyle({ nameBorderId: item.id }, false);
+          itemWrapperStyle = `display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px; border: 1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}; margin-bottom: 12px; transition: all 0.2s;`;
           previewHtml = `<span class="${nBorderClass}"><span style="font-weight:700">${item.name}</span></span>`;
           descHtml = ''; 
         } else if (category === 'theme') {
           const v = item.vars || {};
-          const cBg = v['--bg'] || '#121212';
-          const cAcc = v['--accent'] || 'var(--accent)';
+          const cBg = v['--bg'] || '#15171c';
           const cTxt = v['--text'] || '#fff';
-          itemWrapperStyle = `display:flex; justify-content:space-between; align-items:center; background:${cBg}; padding: 14px 16px; border-radius: 12px; border: 2px solid ${isActive ? 'var(--accent)' : cAcc}; margin-bottom: 12px; transition: all 0.2s;`;
+          itemWrapperStyle = `display:flex; justify-content:space-between; align-items:center; background:${cBg}; padding: 14px 16px; border-radius: 12px; border: 2px solid ${isActive ? 'var(--accent)' : (v['--border'] || 'rgba(255,255,255,0.1)')}; margin-bottom: 12px; transition: all 0.2s;`;
           previewHtml = `<span style="font-weight:700; color:${cTxt}">${item.name}</span>`;
-          descHtml = `<div style="font-size:0.75rem; color:${cTxt}; opacity:0.8">${item.desc}</div>`;
+          
+          const paletteColors = [
+            v['--bg'] || '#15171c',
+            v['--bg2'] || '#1a1d23',
+            v['--accent'] || '#bce2ff',
+            v['--text'] || '#ffffff'
+          ];
+          const paletteHtml = paletteColors.map(c => `<div style="width:12px; height:12px; border-radius:50%; background:${c}; border:1px solid rgba(128,128,128,0.3)"></div>`).join('');
+          descHtml = `
+            <div>
+              <div style="font-size:0.75rem; color:${cTxt}; opacity:0.6; margin-bottom:4px;">${item.desc}</div>
+              <div style="display:flex; gap:4px;">${paletteHtml}</div>
+            </div>`;
         } else if (category === 'treeBg') {
-          previewHtml = `<span style="font-weight:700; color:var(--text)">${item.name}</span>`;
+          const bgVal = item.val || 'none';
+          const bgColor = item.val2 || '#15171c';
+          let bgS = item.bgSize || 'auto';
+          if (bgS.includes('px')) {
+            bgS = bgS.replace(/(\d+)px/g, (match, p1) => (parseInt(p1) / 2.5) + 'px');
+          }
+          itemWrapperStyle = `display:flex; justify-content:space-between; align-items:center; background-image:${bgVal}; background-color:${bgColor}; background-size:${bgS}; padding: 14px 16px; border-radius: 12px; border: 2px solid ${isActive ? 'var(--accent)' : 'var(--border)'}; margin-bottom: 12px; transition: all 0.2s; position:relative; overflow:hidden;`;
+          
+          previewHtml = `<span style="font-weight:700; color:#fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.8); z-index:1;">${item.name}</span>`;
+          descHtml = '';
         } else {
           previewHtml = `<span style="font-weight:700; color:var(--text)">${item.name}</span>`;
+          descHtml = `<div style="font-size:0.75rem; color:var(--text3); opacity:0.8">${item.desc}</div>`;
         }
 
         content.innerHTML += `
@@ -3715,11 +3823,13 @@
     }
 
     function equipItem(category, id) {
-      // Safety: only equip if owned
+      // Safety: only equip if owned (Bypassed for testing)
+      /*
       if (!ownedCosmetics.includes(id) && id !== 'border_none' && !id.includes('_default')) {
         showToast("You don't own this item!");
         return;
       }
+      */
       activeCosmetics[category] = id;
       localStorage.setItem('cladeify_active_cosmetics', JSON.stringify(activeCosmetics));
       applyCosmetics();
@@ -3768,6 +3878,10 @@
     // ---- Google Auth ----
     async function googleSignIn() {
       try {
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+          showToast('Sign-in unavailable in offline testing.');
+          return;
+        }
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await fbAuth.signInWithPopup(provider);
         // Set default display name from Google if none saved
@@ -3776,13 +3890,12 @@
         }
         showToast('Signed in as ' + result.user.displayName);
       } catch (e) {
-        console.error('Sign-in error:', e.code, e.message, e);
         if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
           // User closed the popup
         } else if (e.code === 'auth/popup-blocked') {
           showToast('Popup blocked! Allow popups for this site.');
         } else {
-          showToast('Error: ' + e.code);
+          console.warn('Sign-in error:', e);
         }
       }
     }
@@ -3850,9 +3963,10 @@
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
+          if (!fbDb) return;
           await fbDb.collection('leaderboard').doc(fbUser.uid).set(entry, { merge: true });
         } catch (e) {
-          console.error('Cloud sync error:', e);
+          // Cloud sync bypassed for testing
         }
       } else if (submittedName) {
         const localId = getLocalId();
@@ -3877,9 +3991,10 @@
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         try {
+          if (!fbDb) return;
           await fbDb.collection('leaderboard').doc(localId).set(entry, { merge: true });
         } catch (e) {
-          console.error('Local cloud sync error:', e);
+          // Local sync bypassed for testing
         }
       }
     }
@@ -4002,11 +4117,11 @@
     async function loadCloudLeaderboard() {
       lbCloudLoading = true;
       try {
+        if (!fbDb) { lbCloudData = []; lbCloudFetched = true; return; }
         const snap = await fbDb.collection('leaderboard').orderBy('wins', 'desc').limit(50).get();
         lbCloudData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         lbCloudFetched = true;
       } catch (e) {
-        console.error('Cloud load error:', e);
         lbCloudData = [];
       }
       lbCloudLoading = false;
