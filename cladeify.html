@@ -3109,6 +3109,10 @@
       const realGuesses = guesses.filter(g => g !== null);
       const won = guesses.some(g => g && g.n === answer.n);
       
+      let trackedWins = parseInt(localStorage.getItem('cladeify_tracked_wins')) || 0;
+      let totGuesses = parseInt(localStorage.getItem('cladeify_tot_guesses')) || 0;
+      let avgStr = trackedWins > 0 ? (totGuesses / trackedWins).toFixed(1) : '-';
+      
       let emojiHtml = '';
       for (const g of realGuesses) {
         const lca = getLCA(g.t, answer.t);
@@ -3119,7 +3123,13 @@
         else emojiHtml += '🟥';
       }
 
-      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://cladeify.com`;
+      let text = `Day #${dayLabel} `;
+      if (won) {
+        text += `I figured it out in ${realGuesses.length} guesses! `;
+      } else {
+        text += `I failed to figure it out... `;
+      }
+      text += `${emojiHtml} 🔥 ${streak} | Avg. Guesses: ${avgStr}\nhttps://cladeify.com`;
 
       fallbackCopy(text, btnElement);
     }

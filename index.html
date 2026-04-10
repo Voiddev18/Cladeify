@@ -2317,11 +2317,15 @@
       const kids = Object.values(node.children);
       const isMobile = window.innerWidth <= 768;
       if (kids.length === 0) {
-        // No vertical stagger needed since horizontal allocation is now proportional
+        if (isMobile) {
+          const staggers = [25, 65, 105];
+          node.y += staggers[leafIndex % 3];
+        }
         leafIndex++;
         return;
       }
-      const counts = kids.map(k => getSubtreeWidth(k));
+      const leafCount = k => Object.keys(k.children).length === 0 ? 1 : Object.values(k.children).reduce((s, c) => s + leafCount(c), 0);
+      const counts = kids.map(k => leafCount(k));
       const total = counts.reduce((a, b) => a + b, 0);
       let cx = x - w / 2;
       const vGap = isMobile ? 95 : 110;
@@ -2517,12 +2521,7 @@
       for (const child of Object.values(node.children)) drawNodes(svg, child, node);
     }
 
-    const getSubtreeWidth = (n) => {
-      if (Object.keys(n.children).length === 0) {
-        return Math.max(n.name.length * 8 + 28, 70) + (window.innerWidth <= 768 ? 20 : 40);
-      }
-      return Object.values(n.children).reduce((s, c) => s + getSubtreeWidth(c), 0);
-    };
+    const totalLeaves = (n) => Object.keys(n.children).length === 0 ? 1 : Object.values(n.children).reduce((s, c) => s + totalLeaves(c), 0);
     const getMaxDepth = (n) => Object.keys(n.children).length === 0 ? 0 : 1 + Math.max(...Object.values(n.children).map(c => getMaxDepth(c)));
 
     function renderTree() {
@@ -2537,16 +2536,17 @@
 
       pruneTrie(trie);
 
+      const tl = totalLeaves(trie);
       const isMobile = window.innerWidth <= 768;
+      const leafW = isMobile ? 65 : 160;
       const minW = isMobile ? window.innerWidth : 600;
-      const treeWidthReq = getSubtreeWidth(trie);
-      const svgW = Math.max(minW, treeWidthReq + 60);
+      const svgW = Math.max(minW, tl * leafW);
       const md = getMaxDepth(trie);
       const levelH = isMobile ? 95 : 110;
       const svgH = Math.max(isMobile ? 400 : 350, (md + 1) * levelH + (isMobile ? 180 : 80));
 
       leafIndex = 0;
-      layoutNode(trie, svgW / 2, 40, Math.max(minW - 60, treeWidthReq));
+      layoutNode(trie, svgW / 2, 40, svgW - 60);
       rootPos = { x: trie.x, y: trie.y };
 
       const svgEl = document.getElementById('tree-svg');
@@ -3109,6 +3109,10 @@
       const realGuesses = guesses.filter(g => g !== null);
       const won = guesses.some(g => g && g.n === answer.n);
       
+      let trackedWins = parseInt(localStorage.getItem('cladeify_tracked_wins')) || 0;
+      let totGuesses = parseInt(localStorage.getItem('cladeify_tot_guesses')) || 0;
+      let avgStr = trackedWins > 0 ? (totGuesses / trackedWins).toFixed(1) : '-';
+      
       let emojiHtml = '';
       for (const g of realGuesses) {
         const lca = getLCA(g.t, answer.t);
@@ -3119,7 +3123,13 @@
         else emojiHtml += '🟥';
       }
 
-      const text = `Cladeify #${dayLabel}\n${won ? realGuesses.length : 'X'}/${maxGuesses}${streak > 0 ? ` 🔥${streak}` : ''}\n\n${emojiHtml}\n\nPlay at: https://cladeify.com`;
+      let text = `Day #${dayLabel} `;
+      if (won) {
+        text += `I figured it out in ${realGuesses.length} guesses! `;
+      } else {
+        text += `I failed to figure it out... `;
+      }
+      text += `${emojiHtml} 🔥 ${streak} | Avg. Guesses: ${avgStr}\nhttps://cladeify.com`;
 
       fallbackCopy(text, btnElement);
     }
