@@ -33,11 +33,11 @@
       --red: #e06c75;
       --green: #98c379;
       --gold: #e5c07b;
-      --glass: rgba(94, 176, 249, 0.05);
-      --glass2: rgba(94, 176, 249, 0.1);
-      --border: rgba(94, 176, 249, 0.15);
-      --border-glow: 0 0 8px rgba(94, 176, 249, 0.4);
-      --border-gradient: linear-gradient(45deg, #5eb0f9, #3a7ecd, #a3d4ff);
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass2: rgba(255, 255, 255, 0.1);
+      --border: rgba(255, 255, 255, 0.12);
+      --border-glow: 0 0 8px rgba(255, 255, 255, 0.05);
+      --border-gradient: none;
       --node-text: #ffffff;
       --radius: 12px;
       --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -70,7 +70,8 @@
       padding: 10px 8px 10px 12px;
       background: linear-gradient(135deg, var(--bg3), var(--bg2));
       border-bottom: 2px solid var(--border);
-      border-image: var(--border-gradient) 1;
+      border-image-source: var(--border-gradient, none);
+      border-image-slice: 1;
       position: relative;
       z-index: 100;
       flex-shrink: 0;
@@ -255,6 +256,34 @@
     @keyframes sakuraBgSway {
       0% { background-position: 0% 0%; }
       100% { background-position: 3% 2%; }
+    }
+
+    /* Orion Starfield Animation */
+    .bg-tree_stardust_1 {
+      animation: orionPulse 15s ease-in-out infinite alternate !important;
+      background-repeat: repeat !important;
+      overflow: hidden !important;
+      background-color: #020408 !important; /* Force solid dark back */
+    }
+
+    @keyframes orionPulse {
+      0% { filter: brightness(0.85); }
+      100% { filter: brightness(1.1); }
+    }
+
+    /* Orion Dynamic Sub-Stars */
+    .orion-star {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+      z-index: 1;
+      opacity: 0.2;
+      will-change: opacity, transform;
+    }
+
+    @keyframes starFlash {
+      0%, 93%, 100% { opacity: 0.2; transform: scale(1); }
+      96% { opacity: 1; transform: scale(1.3); }
     }
 
     #nav-dropdown {
@@ -494,8 +523,10 @@
       margin-top: 12px;
       padding: 16px;
       border-radius: var(--radius);
-      background: linear-gradient(135deg, rgba(94, 176, 249, 0.15), rgba(94, 176, 249, 0.05));
-      border: 1px solid rgba(94, 176, 249, 0.3);
+      background: var(--glass2);
+      border: var(--inner-border, 1px solid var(--border));
+      border-image-source: var(--border-gradient, none);
+      border-image-slice: 1;
       text-align: center;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
@@ -900,30 +931,33 @@
       border: 1px solid var(--border)
     }
 
-    .modal .close-btn {
+    .modal .close-btn, #lb-modal .close-btn, #htp-modal .close-btn {
       position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 30px;
-      height: 30px;
+      top: 16px;
+      right: 16px;
+      padding: 6px 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--glass2);
       border: 1px solid var(--border);
-      border-radius: 50%;
-      color: var(--text3);
-      font-size: 1rem;
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10;
+      z-index: 100;
+      min-width: 48px;
+      min-height: 34px;
     }
 
     .modal .close-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--glass);
       color: var(--text);
       border-color: var(--accent);
-      transform: scale(1.1);
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
     }
 
     /* WIN BANNER */
@@ -945,14 +979,16 @@
     }
 
     #win-banner {
-      background: linear-gradient(145deg, #1e2230, #252a38);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg2);
+      border: var(--inner-border, 1px solid var(--border));
+      border-image-source: var(--border-gradient, none);
+      border-image-slice: 1;
       border-radius: 20px;
       padding: 36px 32px 28px;
       max-width: 380px;
       width: 90%;
       text-align: center;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      box-shadow: var(--shadow);
       position: relative;
       animation: bannerPop .35s cubic-bezier(0.34, 1.56, 0.64, 1);
       margin: auto;
@@ -973,18 +1009,20 @@
     }
 
     #win-banner h2 {
-      font-size: 2rem;
+      font-size: 2.22rem;
       font-weight: 800;
       margin: 0 0 6px;
-      background: linear-gradient(135deg, #a8edea, #fed6e3);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
 
     #win-banner .banner-subtitle {
-      font-size: 0.85rem;
-      color: var(--text3);
-      margin-bottom: 24px
+      font-size: 0.9rem;
+      color: var(--text2);
+      margin-bottom: 24px;
+      font-weight: 500;
     }
 
     .banner-stats {
@@ -1008,11 +1046,12 @@
     }
 
     .banner-stat-group-label {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--accent);
+      opacity: 0.9;
       margin-bottom: 10px
     }
 
@@ -1081,12 +1120,14 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(94, 176, 249, 0.1);
-      border: 1px solid rgba(94, 176, 249, 0.3);
-      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid var(--accent);
+      padding: 5px 10px;
       border-radius: 8px;
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .level-badge:hover {
@@ -1168,6 +1209,16 @@
       padding: 20px 10px;
       overflow-y: auto;
       animation: fadeIn 0.2s;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: var(--inner-border, 1px solid var(--border));
+      border-image-source: var(--border-gradient, none);
+      border-image-slice: 1;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
     #stats-modal {
@@ -1385,25 +1436,27 @@
 
     .lb-tab {
       flex: 1;
-      padding: 10px 0;
+      padding: 12px 0;
       text-align: center;
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.9rem;
+      font-weight: 700;
       color: var(--text2);
       background: var(--bg3);
       border: 1px solid var(--border);
       cursor: pointer;
       transition: all .2s;
+      border-radius: 0; /* DEFAULT TO SHARP RECTANGLE */
     }
 
-    .lb-tab:first-child { border-radius: 8px 0 0 8px; }
-    .lb-tab:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+    .lb-tab:first-child { border-radius: 10px 0 0 10px; }
+    .lb-tab:last-child { border-radius: 0 10px 10px 0; border-left: none; }
     .lb-tab:not(:first-child):not(:last-child) { border-left: none; border-right: none; }
 
     .lb-tab.active {
       background: var(--glass);
       color: var(--accent);
       border-color: var(--accent);
+      box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.05);
       z-index: 1;
     }
 
@@ -1454,48 +1507,14 @@
       font-weight: 800;
     }
     .htp-close {
+        /* Legacy class, now aliases to close-btn styles if needed */
         position: absolute;
-        top: 20px;
-        right: 20px;
-        background: var(--glass2);
-        border: 1px solid var(--border);
-        color: var(--text);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s;
+        top: 16px;
+        right: 16px;
     }
-    .htp-close:hover {
-        background: var(--glass);
-        border-color: var(--accent);
-    }
-    .lb-tab {
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all .2s;
-      background: none;
-      border-top: none;
-      border-left: none;
-      border-right: none;
-      font-family: inherit;
-      color: var(--text3);
-      padding: 12px 0;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .lb-tab:hover {
-      color: var(--text2)
-    }
-
-    .lb-tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent)
+    .lb-tab:hover:not(.active) {
+      color: var(--text);
+      background: var(--glass);
     }
 
     /* Leaderboard content */
@@ -1541,23 +1560,22 @@
       box-shadow: 0 0 0 3px rgba(94, 176, 249, 0.12)
     }
 
-    .lb-username-bar button {
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
+    button:not(.nav-item) {
+      padding: 12px 24px;
+      border: var(--inner-border, 1px solid var(--border));
+      background-image: var(--border-gradient, none);
+      background-clip: padding-box;
+      background-color: var(--bg3);
+      color: var(--text);
+      border-radius: var(--radius);
       font-weight: 700;
-      font-family: inherit;
-      font-size: 0.85rem;
       cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap
+      transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
     }
-
-    .lb-username-bar button:hover {
+    button:hover:not(.nav-item) {
+      filter: brightness(1.2);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(94, 176, 249, 0.25)
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     .lb-username-bar button:disabled {
@@ -1657,9 +1675,17 @@
     }
 
     /* My stats card in leaderboard */
+    .lb-my-stats .stat-card {
+      background: var(--glass2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      flex: 1;
+      text-align: center;
+    }
     .lb-my-stats {
-      background: linear-gradient(135deg, rgba(94, 176, 249, 0.08), rgba(94, 176, 249, 0.04));
-      border: 1px solid rgba(94, 176, 249, 0.15);
+      background: linear-gradient(135deg, var(--accent-alpha), rgba(94, 176, 249, 0.04));
+      border: 1px solid var(--accent-alpha);
       border-radius: 14px;
       padding: 16px 8px;
       margin-bottom: 18px;
@@ -2032,6 +2058,74 @@
       box-shadow: inset 0 0 10px rgba(46, 204, 113, 0.1);
     }
 
+    .border_olympian {
+      border: none !important;
+      position: relative;
+      background: linear-gradient(rgba(30,30,35,0.92), rgba(30,30,35,0.92)), 
+                  url('https://www.transparenttextures.com/patterns/marble-similar.png');
+      padding: 6px 16px !important;
+      margin: 18px 12px 10px;
+      display: inline-block;
+      overflow: visible !important;
+      transform-style: preserve-3d;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      font-size: 0.95rem;
+      border-radius: 2px;
+      z-index: 5;
+    }
+
+    /* THE GOLDEN ARCH */
+    .border_olympian::before {
+      content: "";
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 40px;
+      border: 4px solid #ffd700;
+      border-bottom: none;
+      border-radius: 50px 50px 0 0;
+      background: linear-gradient(to right, transparent, rgba(255,215,0,0.1), transparent);
+      box-shadow: 0 -2px 10px rgba(255,215,0,0.3);
+      z-index: -1;
+    }
+
+    /* THE DORIC COLUMNS & VINES */
+    .border_olympian::after {
+      content: "";
+      position: absolute;
+      inset: -8px -18px;
+      background: 
+        /* --- GREEN VINES --- */
+        radial-gradient(circle at 20% 100%, #2d5a27 0%, transparent 25%),
+        radial-gradient(circle at 40% 95%, #3d7a35 0%, transparent 20%),
+        radial-gradient(circle at 60% 105%, #2d5a27 0%, transparent 30%),
+        radial-gradient(circle at 80% 90%, #3d7a35 0%, transparent 25%),
+
+        /* --- LEFT COLUMN --- */
+        linear-gradient(#e8decb, #bfae8e) 0% 0% / 18px 5px no-repeat,
+        radial-gradient(farthest-side at 50% 100%, #e8decb, #d1c3a7) 1px 5px / 16px 4px no-repeat,
+        linear-gradient(to right, #bfae8e, #e8decb 25%, #f7f1e6 50%, #e8decb 75%, #bfae8e) 3px 9px / 12px calc(100% - 14px) no-repeat,
+        linear-gradient(#bfae8e, #e8decb) 0% 100% / 18px 5px no-repeat,
+
+        /* --- RIGHT COLUMN --- */
+        linear-gradient(#e8decb, #bfae8e) 100% 0% / 18px 5px no-repeat,
+        radial-gradient(farthest-side at 50% 100%, #e8decb, #d1c3a7) calc(100% - 1px) 5px / 16px 4px no-repeat,
+        linear-gradient(to right, #bfae8e, #e8decb 25%, #f7f1e6 50%, #e8decb 75%, #bfae8e) calc(100% - 3px) 9px / 12px calc(100% - 14px) no-repeat,
+        linear-gradient(#bfae8e, #e8decb) 100% 100% / 18px 5px no-repeat;
+      
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    /* GOLDEN ACCENTS (The Capitals) */
+    .border_olympian span {
+       position: relative;
+       z-index: 2;
+    }
+
     /* --- Animations --- */
     @keyframes rainbow-pan { to { background-position: 200% center; } }
     @keyframes galaxy-move {
@@ -2098,17 +2192,32 @@
 
     @keyframes borderGlow {
       from {
-        border-image: linear-gradient(45deg, #5eb0f9, #3a7ecd, #a3d4ff) 1;
+        border-image: var(--border-gradient, none) 1;
       }
 
       to {
-        border-image: linear-gradient(45deg, #a3d4ff, #5eb0f9, #3a7ecd) 1;
+        border-image: var(--border-gradient, none) 1;
+      }
+    }
+
+    @keyframes auraGlow {
+      0% {
+        border-image: var(--border-gradient, none) 1;
+        box-shadow: 0 0 10px var(--border);
+      }
+      50% {
+        border-image: var(--border-gradient, none) 1;
+        box-shadow: 0 0 20px var(--accent);
+      }
+      100% {
+        border-image: var(--border-gradient, none) 1;
+        box-shadow: 0 0 10px var(--border);
       }
     }
 
     @keyframes pulse {
       0% {
-        box-shadow: 0 0 0 0 rgba(94, 176, 249, 0.4);
+        box-shadow: 0 0 0 0 var(--accent-alpha);
       }
 
       70% {
@@ -2240,11 +2349,14 @@
         flex-direction: column;
       }
       .modal .close-btn, .lb-close, .htp-close {
+        position: absolute !important;
         top: 8px !important;
         right: 8px !important;
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 14px !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 36px !important;
+        min-height: 28px !important;
+        font-size: 13px !important;
         background: rgba(255, 255, 255, 0.1) !important;
         z-index: 100 !important;
       }
@@ -2289,8 +2401,7 @@
           <span id="user-level" class="level-val">1</span>
         </div>
         <div id="top-coins-display" onclick="openShop()" title="Open Shop"
-
-          style="display:flex; align-items:center; gap:6px; background:rgba(229, 192, 123, 0.1); border:1px solid rgba(229, 192, 123, 0.3); padding:6px 10px; border-radius:8px; text-shadow: 0 1px 3px rgba(0,0,0,0.6); cursor:pointer;">
+          style="display:flex; align-items:center; gap:6px; background:rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); border:1.5px solid var(--gold); padding:5px 10px; border-radius:8px; text-shadow: 0 1px 3px rgba(0,0,0,0.6); cursor:pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
           <span style="font-size:1rem; line-height:1;">🪙</span>
           <span id="points-display"
             style="color:var(--gold); font-weight:800; font-size:0.95rem; line-height:1;">0</span>
@@ -2423,12 +2534,12 @@
 
   <!-- LEADERBOARD MODAL -->
   <div id="lb-overlay" onclick="closeLbIfOutside(event)">
-    <div id="lb-modal">
-      <button class="lb-close" onclick="document.getElementById('lb-overlay').classList.remove('show')"
+    <div id="lb-modal" class="modal">
+      <button class="close-btn" onclick="document.getElementById('lb-overlay').classList.remove('show')"
         aria-label="Close">✕</button>
-      <div class="lb-header">
-        <h2>🏆 Leaderboard</h2>
-        <p>Connect and compete with other players</p>
+      <div class="lb-header" style="text-align: center; margin-bottom: 24px;">
+        <h2 style="margin: 0; font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🏆 Leaderboard</h2>
+        <p style="font-size: 0.9rem; color: var(--text3); margin-top: 4px;">Connect and compete with other players</p>
       </div>
       <div class="lb-tabs">
         <button class="lb-tab active" data-tab="today" onclick="switchLbTab('today')">Today</button>
@@ -2447,34 +2558,25 @@
   <!-- SHOP MODAL -->
   <div id="shop-overlay" style="display:none" class="modal-overlay"
     onclick="if(event.target===this) this.style.display='none'">
-    <div class="modal" id="shop-modal">
+    <div class="modal" id="shop-modal" style="padding-top: 50px;">
       <button class="close-btn" onclick="document.getElementById('shop-overlay').style.display='none'">✕</button>
-      <h2 style="margin: 4px 0 16px 0; text-align: center;">🛒 Shop</h2>
-
-      <!-- EARNING INFO -->
-      <div style="background: rgba(229, 192, 123, 0.05); border: 1px solid rgba(229, 192, 123, 0.15); border-radius: 12px; padding: 12px; margin-bottom: 16px; font-size: 0.75rem; color: var(--text3); text-align: center; line-height: 1.4;">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-           <div style="display: flex; align-items: center; gap: 8px;">
-             <span style="font-size: 0.9rem;">🎫</span>
-             <span>Earn <b>1 coin</b> per win + <b>1 coin</b> per extra guess.</span>
-           </div>
-           <div style="color: var(--gold); font-weight: 700;">✨ Weekends: 1.15x Multiplier Active!</div>
+      
+      <!-- WALLET CORNER -->
+      <div style="position: absolute; top: 16px; left: 16px;">
+        <div style="background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 20px; font-weight: 800; color: var(--gold); border: 1.5px solid var(--gold); font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 6px;">
+          <span id="shop-points-display">0</span> <span style="font-size: 1.1rem;">🪙</span>
         </div>
       </div>
 
-      <!-- POINTS POCKET -->
-      <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-        <div style="background: var(--bg3); padding: 6px 18px; border-radius: 20px; font-weight: 800; color: var(--gold); border: 2px solid rgba(229, 192, 123, 0.25); font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.25);">
-          <span id="shop-points-display">0</span> 🪙
-        </div>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <h2 style="margin: 0 0 20px 0; text-align: center; font-size: 2.22rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🛒 Shop</h2>
+
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:18px; justify-content: center;">
         <button onclick="cycleShop(-1)"
-          style="padding:8px 10px; border-radius:6px; background:var(--glass2); border:1px solid var(--border); color:var(--text); cursor:pointer; font-size:1rem;">&larr;</button>
+          style="padding:8px 10px; border-radius:8px; background:var(--glass2); border:1px solid var(--border); color:var(--text); cursor:pointer; font-size:1rem; transition: all 0.2s;">&larr;</button>
         <span id="shop-current-category"
-          style="flex:1; text-align:center; font-weight:700; color:var(--accent); font-size:0.95rem;">Backgrounds</span>
+          style="min-width: 140px; text-align:center; font-weight:700; color:var(--accent); font-size:1.1rem; letter-spacing: 0.5px;">Backgrounds</span>
         <button onclick="cycleShop(1)"
-          style="padding:8px 10px; border-radius:6px; background:var(--glass2); border:1px solid var(--border); color:var(--text); cursor:pointer; font-size:1rem;">&rarr;</button>
+          style="padding:8px 10px; border-radius:8px; background:var(--glass2); border:1px solid var(--border); color:var(--text); cursor:pointer; font-size:1rem; transition: all 0.2s;">&rarr;</button>
       </div>
       <div id="shop-content" style="max-height: 65vh; overflow-y: auto; padding-right: 4px;">
         <!-- Populated via JS -->
@@ -2501,9 +2603,9 @@
 
   <!-- HOW TO PLAY MODAL -->
   <div id="htp-overlay" onclick="if(event.target===this) closeHowToPlay()">
-    <div id="htp-modal" style="max-width: 500px; padding: 40px 32px;">
-      <button class="htp-close" onclick="closeHowToPlay()">✕</button>
-      <h2 style="font-size: 2.2rem; margin-bottom: 12px; background: linear-gradient(135deg, var(--accent), #a3d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center;">📖 Field Guide</h2>
+    <div id="htp-modal" class="modal" style="max-width: 500px; padding: 40px 32px;">
+      <button class="close-btn" onclick="closeHowToPlay()">✕</button>
+      <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center;">📖 Field Guide</h2>
       <p style="text-align: center; color: var(--text3); font-size: 0.9rem; margin-bottom: 30px;">Overview of Cladeify mechanics and systems</p>
       
       <div class="htp-body" style="font-size: 0.95rem; line-height: 1.6; color: var(--text2); text-align: left;">
@@ -2545,7 +2647,7 @@
         <!-- SECTION: THE SHOP -->
         <div style="margin-bottom: 32px;">
           <h3 style="color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">🛒 Personalization</h3>
-          <p>Use Coins in the <b>Shop</b> to acquire cosmetic Name Borders, UI Themes, and Animated Backgrounds.</p>
+          <p>Use Coins in the <b>Shop</b> to acquire cosmetic Name Plates, UI Themes, and Animated Backgrounds.</p>
         </div>
 
         <div style="padding-top:20px; border-top:1px solid var(--border); font-size:0.75rem; color:var(--text3); line-height:1.4; text-align: center;">
@@ -3103,18 +3205,25 @@
         updateStatsModal();
       }
 
-
-      const badge = document.getElementById('multiplier-badge');
-      if (badge) {
-        const d = new Date().getDay();
-        const isWeekend = (d === 6 || d === 0);
-        badge.style.display = isWeekend ? 'block' : 'none';
+      // Update Multiplier Badge
+      const mBadge = document.getElementById('multiplier-badge');
+      if (mBadge) {
+        mBadge.style.display = isWeekendMultiplierActive() ? 'block' : 'none';
       }
     }
 
+    function isWeekendMultiplierActive() {
+      const now = new Date();
+      const day = now.getDay();
+      const hour = now.getHours();
+      // Sunday (0) is fully active. Saturday (6) active only after 1 PM (13:00)
+      if (day === 0) return true;
+      if (day === 6 && hour >= 13) return true;
+      return false;
+    }
+
     function calculateEarnedPoints(base) {
-      const d = new Date().getDay();
-      if (d === 6 || d === 0) return Math.round(base * 1.15);
+      if (isWeekendMultiplierActive()) return Math.round(base * 1.15);
       return base;
     }
 
@@ -3259,8 +3368,7 @@
                   localStorage.setItem('cladeify_xp', userXP);
                   updatePointsDisplay();
                   syncLocalToCloud();
-                  const d = new Date().getDay();
-                  const bonusMsg = (d === 6 || d === 0) ? " (1.15x Weekend Bonus!)" : "";
+          const bonusMsg = isWeekendMultiplierActive() ? " (1.15x Weekend Bonus!)" : "";
                   setTimeout(() => showToast(`Earned ${earned} points and ${earnedXP} XP!${bonusMsg}`), 500);
                   const xpEl = document.getElementById('banner-xp-earned');
                   if (xpEl) xpEl.textContent = `+${earnedXP}`;
@@ -3637,7 +3745,7 @@
 
     function getNodeColor(node) {
       if (node.isAnswer && !gameOver) return ANSWER_COLOR;
-      if (node.isAnswer && gameOver) return '#5EB0F9';
+      if (node.isAnswer && gameOver) return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
       return getColor(node.lcaWithAnswer, answer.t.length - 1);
     }
 
@@ -4041,9 +4149,31 @@
           val2: '#ffffff',
           bgSize: '280px 280px' 
         },
-        { id: 'tree_stardust_1', name: 'Orion', desc: 'Deep space 4-pointed stars', cost: 210, 
-          val: 'radial-gradient(ellipse 1.5% 12% at 20% 30%, var(--accent), transparent), radial-gradient(ellipse 12% 1.5% at 20% 30%, var(--accent), transparent), radial-gradient(circle at 20% 30%, #fff 2%, transparent 4%), radial-gradient(ellipse 1.2% 8% at 75% 70%, var(--text), transparent), radial-gradient(ellipse 8% 1.2% at 75% 70%, var(--text), transparent), radial-gradient(circle at 75% 70%, #fff 1.5%, transparent 3%), radial-gradient(ellipse 1.5% 10% at 45% 20%, var(--accent2), transparent), radial-gradient(ellipse 10% 1.5% at 45% 20%, var(--accent2), transparent), radial-gradient(circle at 45% 20%, #fff 1.5%, transparent 3%)', 
-          bgSize: '200px 200px' 
+        { id: 'tree_stardust_1', name: 'Orion', desc: 'Deep space celestial field', cost: 210, 
+          val: `
+            radial-gradient(circle at 50% 50%, #fff 2px, transparent 4px),
+            radial-gradient(ellipse 1px 40px at 50% 50%, rgba(255,255,255,0.8), transparent),
+            radial-gradient(ellipse 40px 1px at 50% 50%, rgba(255,255,255,0.8), transparent),
+            radial-gradient(circle at 50% 50%, rgba(100,200,255,0.2) 20px, transparent 40px),
+            
+            radial-gradient(circle at 15% 25%, #fff 1.5px, transparent 3px),
+            radial-gradient(ellipse 0.8px 25px at 15% 25%, rgba(180,220,255,0.6), transparent),
+            radial-gradient(ellipse 25px 0.8px at 15% 25%, rgba(180,220,255,0.6), transparent),
+            
+            radial-gradient(circle at 85% 75%, #fff 1.5px, transparent 3px),
+            radial-gradient(ellipse 0.8px 25px at 85% 75%, rgba(255,230,200,0.6), transparent),
+            radial-gradient(ellipse 25px 0.8px at 85% 75%, rgba(255,230,200,0.6), transparent),
+            
+            radial-gradient(circle at 10% 10%, #fff 1px, transparent 1.5px),
+            radial-gradient(circle at 20% 40%, #fff 0.5px, transparent 1px),
+            radial-gradient(circle at 70% 20%, #fff 1px, transparent 1.5px),
+            radial-gradient(circle at 90% 10%, #fff 0.5px, transparent 1px),
+            radial-gradient(circle at 30% 90%, #fff 1px, transparent 1.5px),
+            radial-gradient(circle at 45% 65%, rgba(255,200,200,0.4) 1px, transparent 2px),
+            radial-gradient(circle at 60% 85%, rgba(200,255,255,0.4) 1px, transparent 2px)
+          `,
+          val2: '#020408',
+          bgSize: '400px 400px' 
         },
         { id: 'tree_sakura_petals', name: 'Sakura Petals', desc: 'Minimalist petals overlay', cost: 250, 
           val: "url('assets/sakura_petals.png')", 
@@ -4058,6 +4188,22 @@
         { id: 'theme_ocean', name: 'Deep Sea', desc: 'Underwater blues', cost: 150, vars: { '--bg': '#041527', '--bg2': '#0b233f', '--bg3': '#143457', '--text': '#dbeafe', '--text2': '#bfdbfe', '--text3': '#93c5fd', '--accent': '#3b82f6', '--accent2': '#2563eb', '--border': 'rgba(59,130,246,0.2)', '--glass2': 'rgba(59,130,246,0.1)', '--node-text': '#ffffff' } },
         { id: 'theme_midnight', name: 'Midnight', desc: 'OLED black with neon blue', cost: 150, vars: { '--bg': '#000000', '--bg2': '#050505', '--bg3': '#0a0a0a', '--text': '#ffffff', '--text2': '#00f3ff', '--text3': '#00707c', '--accent': '#00f3ff', '--accent2': '#0097a7', '--border': 'rgba(0,243,255,0.3)', '--glass2': 'rgba(0,243,243,0.05)', '--node-text': '#ffffff' } },
         { id: 'theme_hacker', name: 'Matrix', desc: 'Neon green hacker theme', cost: 200, vars: { '--bg': '#000000', '--bg2': '#081105', '--bg3': '#0d1f0d', '--text': '#00ff00', '--text2': '#4cf04c', '--text3': '#2a8f2a', '--accent': '#00ff00', '--accent2': '#00cc00', '--border': 'rgba(0,255,0,0.3)', '--glass2': 'rgba(0,255,0,0.1)', '--node-text': '#ffffff' } },
+        { id: 'theme_aurum', name: 'Aurum Edition', desc: 'Polished 24K gold on obsidian', cost: 400, vars: {
+          '--bg': '#0a0904',
+          '--bg2': '#151308',
+          '--accent': '#ffd700',
+          '--accent2': '#b8860b',
+          '--text': '#fff9e6',
+          '--text2': '#d4af37',
+          '--text3': '#8e712a',
+          '--glass': 'rgba(255, 215, 0, 0.08)',
+          '--glass2': 'rgba(255, 215, 0, 0.15)',
+          '--border': 'rgba(184, 134, 11, 0.4)',
+          '--border-gradient': 'linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fcf6ba, #aa771c)',
+          '--inner-border': '1px solid rgba(255, 215, 0, 0.2)',
+          '--green': '#ffd700',
+          '--red': '#7a0000'
+        }},
         { id: 'theme_sakura', name: 'Cherry Blossom', desc: 'Soft and lovely pinks', cost: 200, vars: { '--bg': '#E89EB8', '--bg2': '#f2b3c9', '--bg3': '#c77994', '--text': '#2D1A21', '--text2': '#4A2C38', '--text3': '#724859', '--accent': '#C2185B', '--accent2': '#9C1045', '--border': 'rgba(0,0,0,0.15)', '--glass2': 'rgba(255,255,255,0.4)', '--node-text': '#ffffff' } },
         { id: 'theme_vellum', name: 'Vellum', desc: 'Classic aged paper journal', cost: 250, vars: { '--bg': '#f4eccd', '--bg2': '#ece3ba', '--bg3': '#dfd6a8', '--text': '#2c2211', '--text2': '#4a3d25', '--text3': '#6d5a3d', '--accent': '#8b4513', '--accent2': '#5d2e0d', '--border': 'rgba(139,69,19,0.2)', '--glass2': 'rgba(0,0,0,0.03)', '--node-text': '#2c2211' } },
         { id: 'theme_polka', name: 'Polka Noir', desc: 'Classic black and white', cost: 200, vars: { '--bg': '#ffffff', '--bg2': '#f2f2f2', '--bg3': '#e0e0e0', '--text': '#000000', '--text2': '#222222', '--text3': '#666666', '--accent': '#000000', '--accent2': '#333333', '--border': 'rgba(0,0,0,0.3)', '--glass2': 'rgba(0,0,0,0.05)', '--node-text': '#ffffff' } }
@@ -4118,17 +4264,29 @@
       // Apply Theme Vars
       if (themeItem && themeItem.vars) {
         // Sync border gradient with theme accent if not explicitly provided
-        if (!themeItem.vars['--border-gradient']) {
-          const acc = themeItem.vars['--accent'] || '#5eb0f9';
-          const acc2 = themeItem.vars['--accent2'] || '#3a7ecd';
-          document.documentElement.style.setProperty('--border-gradient', `linear-gradient(45deg, ${acc}, ${acc2}, ${acc})`);
-        }
         for (const [k, v] of Object.entries(themeItem.vars)) {
           document.documentElement.style.setProperty(k, v);
         }
+        // Ensure we handle border-gradient properly
+        if (themeItem.vars['--border-gradient']) {
+          document.documentElement.style.setProperty('--border-gradient', themeItem.vars['--border-gradient']);
+        } else {
+          document.documentElement.style.setProperty('--border-gradient', 'none');
+        }
       } else {
-        // Restore default blue scientific theme vars
-        document.documentElement.style.setProperty('--border-gradient', 'linear-gradient(45deg, #5eb0f9, #3a7ecd, #a3d4ff)');
+        document.documentElement.style.setProperty('--border-gradient', 'none');
+      }
+
+      // Update Win Banner
+      const winBanner = document.getElementById('win-banner');
+      if (winBanner) {
+        winBanner.style.background = 'var(--bg2)';
+        winBanner.style.border = '1px solid var(--border)';
+      }
+      const shareBtn = document.getElementById('banner-share-btn');
+      if (shareBtn) {
+        shareBtn.style.background = 'var(--accent)';
+        shareBtn.style.color = 'var(--bg)';
       }
 
       // Handle Animated Backgrounds
@@ -4145,13 +4303,64 @@
           tc.classList.add('fireworks-active');
         }
 
-        // Handle Sakura Particles
+        // Handle Background Particles
         if (treeItem.id === 'tree_sakura_petals') {
           startSakuraParticles();
+          stopOrionParticles();
+        } else if (treeItem.id === 'tree_stardust_1') {
+          startOrionParticles();
+          stopSakuraParticles();
         } else {
           stopSakuraParticles();
+          stopOrionParticles();
         }
       }
+    }
+
+    let orionInt = null;
+    function startOrionParticles() {
+      stopOrionParticles();
+      const tc = document.getElementById('tree-container');
+      if (!tc) return;
+
+      // Spawn a large initial field
+      for (let i = 0; i < 80; i++) {
+        spawnOrionStar(tc, true);
+      }
+
+      // Occasionally spawn new ones to keep it fresh
+      orionInt = setInterval(() => {
+        spawnOrionStar(tc, false);
+      }, 500);
+    }
+
+    function spawnOrionStar(container, initial) {
+      const p = document.createElement('div');
+      p.className = 'orion-star';
+      const size = Math.random() * 2 + 0.5;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      
+      const colors = ['#fff', '#fff', '#bce2ff', '#ffe8b0'];
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      
+      p.style.left = Math.random() * 100 + '%';
+      p.style.top = Math.random() * 100 + '%';
+      
+      const delay = Math.random() * 10;
+      const dur = Math.random() * 5 + 5;
+      p.style.animation = `starFlash ${dur}s ease-in-out ${delay}s infinite`;
+      
+      container.appendChild(p);
+      if (!initial) {
+        setTimeout(() => p.remove(), 15000);
+      }
+    }
+
+    function stopOrionParticles() {
+      if (orionInt) clearInterval(orionInt);
+      orionInt = null;
+      document.querySelectorAll('.orion-star').forEach(p => p.remove());
     }
 
     let sakuraInt = null;
@@ -4213,7 +4422,7 @@
 
     let currentShopCategory = 'treeBg';
     const shopCategories = ['treeBg', 'theme', 'nameColor', 'nameBorder'];
-    const shopLabels = { treeBg: 'Backgrounds', theme: 'Themes', nameColor: 'Name Colors', nameBorder: 'Borders' };
+    const shopLabels = { treeBg: 'Backgrounds', theme: 'Themes', nameColor: 'Name Colors', nameBorder: 'Name Plates' };
 
     function cycleShop(dir) {
       const idx = shopCategories.indexOf(currentShopCategory);
