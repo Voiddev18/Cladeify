@@ -2435,35 +2435,55 @@
 
   <!-- HOW TO PLAY MODAL -->
   <div id="htp-overlay" onclick="if(event.target===this) closeHowToPlay()">
-    <div id="htp-modal">
+    <div id="htp-modal" style="max-width: 500px; padding: 40px 32px;">
       <button class="htp-close" onclick="closeHowToPlay()">✕</button>
-      <h2>📖 How to Play</h2>
-      <div class="htp-body" style="font-size: 0.95rem; line-height: 1.6; color: var(--text2);">
-        <p>Cladeify is a daily phylogenetic guessing game. Identify the mystery animal by exploring the tree of life.</p>
-        <ul style="padding-left: 20px; margin-bottom: 24px;">
-          <li style="margin-bottom: 10px;">Guess any animal to begin.</li>
-          <li style="margin-bottom: 10px;">The tree reveals the <b>most recent common ancestor</b> (clade) between your guess and the answer.</li>
-          <li style="margin-bottom: 10px;">Use the <b>taxonomic clues</b> and proximity colors to narrow down your next guesses!</li>
-          <li style="margin-bottom: 10px;"><b>Click on clades or animals</b> in the tree to view their wiki description and see common animals in that group.</li>
-        </ul>
+      <h2 style="font-size: 2.2rem; margin-bottom: 12px; background: linear-gradient(135deg, var(--accent), #a3d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center;">📖 Field Guide</h2>
+      <p style="text-align: center; color: var(--text3); font-size: 0.9rem; margin-bottom: 30px;">Overview of Cladeify mechanics and systems</p>
+      
+      <div class="htp-body" style="font-size: 0.95rem; line-height: 1.6; color: var(--text2); text-align: left;">
         
-        <p style="font-weight: 700; color: var(--text); margin-bottom: 12px; font-size: 1rem;">Color Guide:</p>
-        <div style="display: grid; grid-template-columns: auto 1fr; gap: 12px; margin-bottom: 24px; padding-left: 8px;">
-          <span style="color:var(--red); font-size: 1.2rem;">🟥</span> <span><b>Red:</b> Distant.</span>
-          <span style="color:var(--gold); font-size: 1.2rem;">🟨</span> <span><b>Yellow:</b> Getting closer (same class or order).</span>
-          <span style="color:var(--green); font-size: 1.2rem;">🟩</span> <span><b>Green:</b> Very close (same family or genus).</span>
-          <span style="color:var(--accent); font-size: 1.2rem;">🟦</span> <span><b>Blue:</b> Correct Answer!</span>
+        <!-- SECTION: THE GOAL -->
+        <div style="margin-bottom: 28px;">
+          <h3 style="color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">🎯 Objective</h3>
+          <p>Identify the daily <b>Mystery Animal</b> in the fewest possible guesses. A new species is selected every 24 hours.</p>
         </div>
 
-        <div style="background: var(--glass2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 24px;">
-          <p style="font-weight: 700; color: var(--gold); margin: 0 0 8px 0; font-size: 1rem;">🪙 Rewards:</p>
-          <p style="margin:0 0 8px 0; font-size: 0.9rem;">Earn <b>1 coin</b> for a correct guess, plus <b>1 coin</b> for every remaining guess!</p>
-          <p style="margin:0; font-size: 0.85rem; color: var(--accent2); font-weight: 600;">✨ Weekend Bonus: Enjoy a 1.15x coin multiplier every Saturday & Sunday!</p>
+        <!-- SECTION: THE MECHANIC -->
+        <div style="margin-bottom: 28px; background: var(--glass2); padding: 16px; border-radius: 14px; border: 1px solid var(--border);">
+          <h3 style="color: var(--gold); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">🧬 Taxonomy Logic</h3>
+          <p>Each guess identifies the <b>Most Recent Common Ancestor (MRCA)</b>: the point where your guess and the answer diverge.</p>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 12px; margin-top: 12px; font-size: 0.85rem;">
+            <span style="color:var(--red);">🟥</span> <span><b>Red:</b> Distant relative.</span>
+            <span style="color:var(--gold);">🟨</span> <span><b>Yellow:</b> Matching Class or Order.</span>
+            <span style="color:var(--green);">🟩</span> <span><b>Green:</b> Matching Family or Genus.</span>
+            <span style="color:var(--accent);">🟦</span> <span><b>Blue:</b> Target Species.</span>
+          </div>
         </div>
 
-        <div style="padding-top:20px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text3); line-height:1.4">
-          Cladeify is a visual redesign of the original phylogenetic guessing game <b>Metazooa</b>. 
-          Credit to <b>Trainwreck Labs</b> for creating the original game design.
+        <!-- SECTION: THE TREE -->
+        <div style="margin-bottom: 28px;">
+          <h3 style="color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">🌳 Tree Interaction</h3>
+          <p>Click on any node in the tree visualization to open a Wikipedia Knowledge Panel. This provides taxonomic descriptions, common species, and biological history for that clade.</p>
+        </div>
+
+        <!-- SECTION: REWARDS -->
+        <div style="margin-bottom: 28px; border-left: 3px solid var(--accent); padding-left: 16px;">
+          <h3 style="color: var(--text); font-size: 1rem; margin-bottom: 6px;">🪙 Rewards & Progression</h3>
+          <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
+            <li>💰 <b>Coins:</b> 1 per win, plus 1 for every remaining guess.</li>
+            <li>✨ <b>XP:</b> Experience points are rewarded for every win to increase your Profile Level.</li>
+            <li>📅 <b>Weekends:</b> A <b>1.15x Coin Multiplier</b> is active every Saturday and Sunday.</li>
+          </ul>
+        </div>
+
+        <!-- SECTION: THE SHOP -->
+        <div style="margin-bottom: 32px;">
+          <h3 style="color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">🛒 Personalization</h3>
+          <p>Use Coins in the <b>Shop</b> to acquire cosmetic Name Borders, UI Themes, and Animated Backgrounds.</p>
+        </div>
+
+        <div style="padding-top:20px; border-top:1px solid var(--border); font-size:0.75rem; color:var(--text3); line-height:1.4; text-align: center;">
+          Cladeify is a visual redesign of Metazooa by <b>Trainwreck Labs</b>.
         </div>
       </div>
     </div>
@@ -3864,7 +3884,6 @@
     // ============ DEV & SECURITY CONFIG ============
     const IS_DEV = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
     if (IS_DEV) {
-      // Allows testing on localhost without App Check blocking you
       self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; 
     }
 
@@ -3884,16 +3903,14 @@
         fbAuth = firebase.auth();
         fbDb = firebase.firestore();
         
-        // --- APP CHECK INITIALIZATION ---
-        // Note: You must enable App Check in Firebase Console and get a reCAPTCHA v3 site key
         try {
           fbAppCheck = fbApp.appCheck();
           fbAppCheck.activate(
-            '6Ldzo7EsAAAAAFPTZS3Y4v_oqxLfCxOpRuLhH9QW', // Your actual reCAPTCHA v3 site key
-            true // Auto-refresh token
+            '6Ldzo7EsAAAAAFPTZS3Y4v_oqxLfCxOpRuLhH9QW', 
+            true
           );
         } catch(appCheckErr) {
-          console.warn("App Check failed to init. This is normal if not configured yet.");
+          console.warn("App Check failed to init.");
         }
       } else {
         throw new Error('Firebase SDK not loaded');
