@@ -1,0 +1,19 @@
+# Cladeify Privacy & Organization
+
+# --- IGNORE FOLDERS ---
+docs/
+Backups/
+assets/
+
+# --- IGNORE PRIVATE DEV FILES ---
+cladeify.html
+gemini.md
+
+# --- IGNORE OLD/REDUCANT FILES ---
+cladeify_summary.md
+api.md
+concepts.md
+
+# --- SYSTEM FILES ---
+.DS_Store
+Thumbs.db

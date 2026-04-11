@@ -2201,6 +2201,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
 </head>
 
 <body>
@@ -3860,6 +3861,13 @@
       }
     }
 
+    // ============ DEV & SECURITY CONFIG ============
+    const IS_DEV = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+    if (IS_DEV) {
+      // Allows testing on localhost without App Check blocking you
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; 
+    }
+
     // ============ FIREBASE SETUP ============
     const firebaseConfig = {
       apiKey: "AIzaSyDCdHl2UB6UhfESolchk4NzcTZY1MjtSVs",
@@ -3869,12 +3877,24 @@
       messagingSenderId: "431501453055",
       appId: "1:431501453055:web:7192eb7c4e915e0e784eca"
     };
-    let fbAuth, fbDb;
+    let fbAuth, fbDb, fbAppCheck;
     try {
       if (typeof firebase !== 'undefined') {
         const fbApp = firebase.initializeApp(firebaseConfig);
         fbAuth = firebase.auth();
         fbDb = firebase.firestore();
+        
+        // --- APP CHECK INITIALIZATION ---
+        // Note: You must enable App Check in Firebase Console and get a reCAPTCHA v3 site key
+        try {
+          fbAppCheck = fbApp.appCheck();
+          fbAppCheck.activate(
+            '6Ldzo7EsAAAAAFPTZS3Y4v_oqxLfCxOpRuLhH9QW', // Your actual reCAPTCHA v3 site key
+            true // Auto-refresh token
+          );
+        } catch(appCheckErr) {
+          console.warn("App Check failed to init. This is normal if not configured yet.");
+        }
       } else {
         throw new Error('Firebase SDK not loaded');
       }
@@ -4728,6 +4748,70 @@
           lbCloudData = []; lbCloudFetched = false;
         };
         doSync();
+      }
+    };
+
+    // ============ ADMIN TOOLS (HIDDEN) ============
+    // Accessibility: Press Alt + Shift + D to open
+    const ADMIN_UIDS = ['CkNq6106jmdYcRyqm4vVsbXFEF52'];
+    
+    function isUserAdmin() {
+      return fbUser && ADMIN_UIDS.includes(fbUser.uid);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+        if (IS_DEV || isUserAdmin()) {
+          openAdminPanel();
+        } else {
+          console.log("Admin shortcut detected but access denied.");
+        }
+      }
+    });
+
+    function openAdminPanel() {
+      let overlay = document.getElementById('admin-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'admin-overlay';
+        overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px); color:white; font-family:sans-serif;';
+        overlay.innerHTML = `
+          <div style="background:#1a1d23; padding:30px; border-radius:15px; border:1px solid #444; width:350px; text-align:center;">
+            <h2 style="margin-top:0; color:var(--accent,#5eb0f9)">🛠 Admin Tools</h2>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+              <button onclick="adminAddPoints(50)" style="padding:10px; background:#222; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">+50 Coins</button>
+              <button onclick="adminAddXP(500)" style="padding:10px; background:#222; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">+500 XP</button>
+              <button onclick="adminToggleWeekend()" style="padding:10px; background:#222; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">Toggle Weekend Badge</button>
+              <button onclick="document.getElementById('admin-overlay').style.display='none'" style="margin-top:10px; padding:10px; background:transparent; color:#888; border:none; cursor:pointer;">Close</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      }
+      overlay.style.display = 'flex';
+    }
+
+    window.adminAddPoints = (amt) => {
+      userPoints += amt;
+      localStorage.setItem('cladeify_points', userPoints);
+      updatePointsDisplay();
+      syncLocalToCloud();
+      showToast(`Added ${amt} coins (Admin)`);
+    };
+
+    window.adminAddXP = (amt) => {
+      userXP += amt;
+      localStorage.setItem('cladeify_xp', userXP);
+      checkLevelUp();
+      syncLocalToCloud();
+      showToast(`Added ${amt} XP (Admin)`);
+    };
+
+    window.adminToggleWeekend = () => {
+      const badge = document.getElementById('multiplier-badge');
+      if (badge) {
+        badge.style.display = badge.style.display === 'none' ? 'block' : 'none';
+        showToast("Weekend multi badge toggled");
       }
     };
 
