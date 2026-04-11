@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="assets/cladeify_header.png" alt="Cladeify Logo" width="600">
-
 # Cladeify
 ### A Daily Phylogenetic Guessing Game
 
