@@ -241,7 +241,7 @@
 
     @keyframes gridScroll {
       from { background-position: 0 0; }
-      to { background-position: 256px 256px; } /* Matches background-size for seamless loop */
+      to { background-position: 128px 128px; } /* Matches new bgSize for seamless loop */
     }
 
     /* Sakura Single-Layer Animated Background */
@@ -4023,8 +4023,8 @@
         { id: 'tree_default', name: 'Original', desc: 'Clean slate', cost: 0, val: 'transparent' },
         { id: 'tree_bloom', name: 'Scientific Isogrid', desc: 'Symmetrical architectural grid', cost: 50, 
           val: "url('assets/scientific_isogrid.png')", 
-          val2: '#080808',
-          bgSize: '256px 256px' 
+          val2: '#050505',
+          bgSize: '128px 128px' 
         },
         { id: 'tree_obsidian', name: 'Neural Contour', desc: 'Sharp topographic synaptic mapping', cost: 90, 
           val: "url('assets/neural_contour.png')", 
@@ -4783,7 +4783,7 @@
           if (b.winRate !== a.winRate) return b.winRate - a.winRate;
           return b.wins - a.wins;
         });
-        html += `<table class="lb-table"><thead><tr><th>#</th><th>Player</th><th>Wins</th><th>Win %</th><th>Avg</th></tr></thead><tbody>`;
+        html += `<table class="lb-table"><thead><tr><th>#</th><th>Player</th><th>Wins</th><th>Avg</th></tr></thead><tbody>`;
         sorted.forEach((e, i) => {
           const isYou = myUid && (e.uid === myUid || e.id === myUid || e.localId === myUid);
           const rankClass = i < 3 ? ` rank-${i + 1}` : '';
@@ -4794,7 +4794,6 @@
              <td class="rank${rankClass}">${medal}</td>
              <td><span class="${nBorderClass}"><span class="${nColorClass}" style="${nColorStyle}">${escHtml(e.name || 'Anonymous')}${isYou ? ' (you)' : ''}</span></span></td>
              <td>${e.wins}</td>
-             <td>${e.winRate}%</td>
              <td>${e.avgGuesses ? Number(e.avgGuesses).toFixed(1) : '-'}</td>
            </tr>`;
         });
